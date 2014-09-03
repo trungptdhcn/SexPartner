@@ -3,7 +3,7 @@ package com.example.SexPartner;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class MyActivity extends Activity
+public class MainActivity extends Activity
 {
     /**
      * Called when the activity is first created.
@@ -13,6 +13,5 @@ public class MyActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-//        as
     }
 }
