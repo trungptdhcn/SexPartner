@@ -13,5 +13,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"/>
+        <activity android:name=".ui.CreatePINActivity"/>
+        <activity android:name=".ui.FirstPartnerActivity"/>
     </application>
 </manifest>

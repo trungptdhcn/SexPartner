@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SexPartner</string>
+    <string name="welcome">Welcome!</string>
+    <string name="please_create_pin">Please create a PIN so that only you can access the app</string>
+    <string name="continue_create_pin">Continue</string>
 </resources>

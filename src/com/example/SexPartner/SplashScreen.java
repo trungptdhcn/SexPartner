@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
+import com.example.SexPartner.ui.CreatePINActivity;
 
 /**
  * Created by Jodie Pham on 9/3/14.
@@ -28,7 +29,7 @@ public class SplashScreen extends Activity
             public void run()
             {
                 /* Create an Intent that will start the Menu-Activity. */
-                Intent mainIntent = new Intent(SplashScreen.this, MainActivity.class);
+                Intent mainIntent = new Intent(SplashScreen.this, CreatePINActivity.class);
                 startActivity(mainIntent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();

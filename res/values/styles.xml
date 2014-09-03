@@ -4,4 +4,13 @@
         <item name="android:windowBackground">@drawable/ic_launcher</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+    <style name="title_style_text">
+        <item name="android:color">@color/White</item>
+        <item name="android:textSize">@dimen/_30dp</item>
+    </style>
+
+    <style name="normal_style_text">
+        <item name="android:color">@color/White</item>
+        <item name="android:textSize">@dimen/_20dp</item>
+    </style>
 </resources>
