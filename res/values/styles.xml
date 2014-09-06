@@ -13,4 +13,25 @@
         <item name="android:color">@color/White</item>
         <item name="android:textSize">@dimen/_20dp</item>
     </style>
+    <style name="title_style_text_black_large">
+        <item name="android:color">@color/Black</item>
+        <item name="android:textSize">@dimen/_30dp</item>
+    </style>
+
+    <style name="title_style_text_black_medium">
+        <item name="android:color">@color/Black</item>
+        <item name="android:textSize">@dimen/_25dp</item>
+    </style>
+    <style name="title_style_text_black_normal">
+        <item name="android:color">@color/Black</item>
+        <item name="android:textSize">@dimen/_20dp</item>
+    </style>
+    <style name="title_style_text_black_small">
+        <item name="android:color">@color/Black</item>
+        <item name="android:textSize">@dimen/_15dp</item>
+    </style>
+    <style name="title_style_text_black_tidy">
+        <item name="android:color">@color/Black</item>
+        <item name="android:textSize">@dimen/_10dp</item>
+    </style>
 </resources>
