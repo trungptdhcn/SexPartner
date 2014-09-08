@@ -4,4 +4,6 @@
     <string name="welcome">Welcome!</string>
     <string name="please_create_pin">Please create a PIN so that only you can access the app</string>
     <string name="continue_create_pin">Continue</string>
+    <string name="time_to_play">Time to play</string>
+    <string name="play">Play</string>
 </resources>

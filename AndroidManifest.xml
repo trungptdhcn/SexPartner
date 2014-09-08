@@ -13,7 +13,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"/>
-        <activity android:name=".ui.CreatePINActivity"/>
-        <activity android:name=".ui.FirstPartnerActivity"/>
+        <activity android:name=".ui.CreatePINActivity" android:theme="@android:style/Theme.NoTitleBar"/>
+        <activity android:name=".ui.FirstPartnerActivity" android:theme="@android:style/Theme.NoTitleBar"/>
+        <activity android:name=".ui.TimeToPlayActivity" android:theme="@android:style/Theme.NoTitleBar"/>
+        <activity android:name=".ui.TimeToMatchActivity"/>
+        <activity android:name=".ui.Round1Activity"/>
+        <activity android:name=".ui.GuessingTimeActivity"/>
     </application>
 </manifest>
