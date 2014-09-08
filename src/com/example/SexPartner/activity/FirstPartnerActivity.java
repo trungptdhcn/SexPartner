@@ -1,17 +1,17 @@
-package com.example.SexPartner.ui;
+package com.example.SexPartner.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
 import com.example.SexPartner.R;
 
 /**
- * Created by Jodie Pham on 9/6/14.
+ * Created by Jodie Pham on 9/3/14.
  */
-public class TimeToMatchActivity extends Activity
+public class FirstPartnerActivity extends Activity
 {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.time_to_match);
+        setContentView(R.layout.first_partner);
     }
 }

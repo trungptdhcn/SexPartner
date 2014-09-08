@@ -1,4 +1,4 @@
-package com.example.SexPartner.ui;
+package com.example.SexPartner.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,11 +26,11 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_pin);
-        edtPIN1 = (EditText)findViewById(R.id.create_pin_edtPIN1);
-        edtPIN2 = (EditText)findViewById(R.id.create_pin_edtPIN2);
-        edtPIN3 = (EditText)findViewById(R.id.create_pin_edtPIN3);
-        edtPIN4 = (EditText)findViewById(R.id.create_pin_edtPIN4);
-        btContinue = (Button)findViewById(R.id.create_pin_btContinue);
+        edtPIN1 = (EditText) findViewById(R.id.create_pin_edtPIN1);
+        edtPIN2 = (EditText) findViewById(R.id.create_pin_edtPIN2);
+        edtPIN3 = (EditText) findViewById(R.id.create_pin_edtPIN3);
+        edtPIN4 = (EditText) findViewById(R.id.create_pin_edtPIN4);
+        btContinue = (Button) findViewById(R.id.create_pin_btContinue);
         setFocusEditTextPin();
         btContinue.setOnClickListener(this);
 
@@ -50,7 +50,7 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if(edtPIN1.getText().toString().length()==1)     //size as per your requirement
+                if (edtPIN1.getText().toString().length() == 1)     //size as per your requirement
                 {
                     edtPIN2.requestFocus();
                 }
@@ -74,7 +74,7 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if(edtPIN2.getText().toString().length()==1)     //size as per your requirement
+                if (edtPIN2.getText().toString().length() == 1)     //size as per your requirement
                 {
                     edtPIN3.requestFocus();
                 }
@@ -98,7 +98,7 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if(edtPIN3.getText().toString().length()==1)     //size as per your requirement
+                if (edtPIN3.getText().toString().length() == 1)     //size as per your requirement
                 {
                     edtPIN4.requestFocus();
                 }
@@ -123,7 +123,7 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                if(edtPIN4.getText().toString().length()==1)     //size as per your requirement
+                if (edtPIN4.getText().toString().length() == 1)     //size as per your requirement
                 {
                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                 }

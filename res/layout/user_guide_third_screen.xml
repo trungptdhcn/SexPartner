@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/White">
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_40dp"
+            android:textStyle="bold"
+            android:text="@string/how_to_play"
+            style="@style/title_style_text_black_normal"
+            android:gravity="center"
+            />
+    <include layout="@layout/line"/>
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/_8dp"
+                    android:layout_marginTop="@dimen/_10dp"
+                    android:orientation="vertical">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_your_turn"
+                android:id="@+id/textView1"
+                android:textStyle="bold"
+                style="@style/title_style_text_black_normal"
+                />
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView1"
+                android:id="@+id/textView2"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/_20dp"
+                android:text="@string/desc_start_your_turn"
+                style="@style/title_style_text_black_small"
+                />
+
+        <Button
+                android:layout_width="@dimen/_240dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textView1"
+                android:id="@+id/user_guide_second_screen_btIllustrator"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="@dimen/_160dp"
+                android:text="@string/some_illustrator_related_start_your_turn"
+                style="@style/title_style_text_black_small"
+                />
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/_20dp"
+                android:text="@string/note_related_start_your_turn"
+                style="@style/title_style_text_black_small"
+                />
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

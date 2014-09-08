@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/White">
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_40dp"
+            android:textStyle="bold"
+            android:text="@string/what_is_sex_partner"
+            style="@style/title_style_text_black_normal"
+            android:gravity="center"
+            />
+    <include layout="@layout/line"/>
+    <ScrollView android:layout_width="match_parent"
+                android:layout_height="match_parent">
+        <LinearLayout android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginLeft="@dimen/_8dp"
+                      android:layout_marginTop="@dimen/_10dp"
+                      android:orientation="vertical">
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/game_introduce"
+                    style="@style/title_style_text_black_small"
+                    />
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_20dp"
+                    android:text="@string/game_description"
+                    style="@style/title_style_text_black_small"
+                    />
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="@dimen/_8dp"
+                    android:layout_marginTop="@dimen/_10dp"
+                    android:layout_height="match_parent">
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_launcher"/>
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/_8dp"
+                        android:text="@string/game_follow_1"
+                        style="@style/title_style_text_black_small"
+                        />
+            </LinearLayout>
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="@dimen/_8dp"
+                    android:layout_marginTop="@dimen/_10dp"
+                    android:layout_height="match_parent">
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_launcher"/>
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/_8dp"
+                        android:text="@string/game_follow_2"
+                        style="@style/title_style_text_black_small"
+                        />
+            </LinearLayout>
+
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="@dimen/_8dp"
+                    android:layout_marginTop="@dimen/_10dp"
+                    android:layout_height="match_parent">
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_launcher"/>
+                <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/_8dp"
+                        android:text="@string/game_follow_3"
+                        style="@style/title_style_text_black_small"
+                        />
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </ScrollView>
+
+
+</LinearLayout>

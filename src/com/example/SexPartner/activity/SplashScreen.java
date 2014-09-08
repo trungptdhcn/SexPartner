@@ -1,23 +1,27 @@
-package com.example.SexPartner;
+package com.example.SexPartner.activity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
-import com.example.SexPartner.ui.CreatePINActivity;
+import com.example.SexPartner.R;
 
 /**
  * Created by Jodie Pham on 9/3/14.
  */
 public class SplashScreen extends Activity
 {
-    /** Duration of wait **/
+    /**
+     * Duration of wait *
+     */
     private final int SPLASH_DISPLAY_LENGTH = 1000;
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
-    public void onCreate(Bundle icicle) {
+    public void onCreate(Bundle icicle)
+    {
         super.onCreate(icicle);
         setContentView(R.layout.splashscreen);
 

@@ -6,4 +6,54 @@
     <string name="continue_create_pin">Continue</string>
     <string name="time_to_play">Time to play</string>
     <string name="play">Play</string>
+    <!--user guide-->
+    <string name="what_is_sex_partner">What\'s Sex Partners: The Game?</string>
+    <string name="game_introduce">This game is all about getting to know your partner
+        better when it comes to sex. Learn about each other\'s preferences,
+        fantastic and take your new-found knowledge to the badroom (or
+        perhaps somewhere else)!
+    </string>
+    <string name="game_description">It works like this:</string>
+    <string name="game_follow_1">Your answer 2 question and invite your partner to play</string>
+    <string name="game_follow_2">Your partner tries to guess your answers and gets points
+        if guessed correctly. Your partner than answers 2 question
+    </string>
+    <string name="game_follow_3">Now, it\'s your turn to guess your partner\'s answers and submit
+        your own answers to 2 new questions
+    </string>
+    <string name="how_to_play">How to play</string>
+    <string name="select_partner">1. Select your partner</string>
+    <string name="find_your_partner">Find your partner in few seconds using Facebook</string>
+    <string name="some_illustration_related_select_partner">Some illustration here that illustrator finding the partner
+        using Facebook
+    </string>
+    <string name="note_related_select_partner">Please notice that we do not post anything on your wall or submit any
+        data
+        to Facebook. Gameplay data is kept strictly confidential.
+    </string>
+    <string name="start_your_turn">2. Start your turn</string>
+    <string name="desc_start_your_turn">It\'s your turn to go first. Answer the 2 questions truthfully and your
+        game invite will be sent to your partner as a private message on Facebook
+    </string>
+    <string name="some_illustrator_related_start_your_turn">Some illustration here that illustrator something being sent
+        ower to the
+        partner
+    </string>
+    <string name="note_related_start_your_turn">Remember to tell your partner that you want to play - to make sure that
+        your partner installs the app
+    </string>
+    <string name="wait_for_partner">3. Wait for your partner</string>
+    <string name="des_wait_for_partner">Now, it\'s your partner\'s turn to play. Wait for your fun. Then..</string>
+    <string name="see_tried_to_guess">See how your partner tried to guess your answers</string>
+    <string name="guess_how_your_partner">Guess how your partner answered his/her questions. You\'ll get points for
+        each of your partner answers you can guess
+    </string>
+    <string name="start_another_batch">Start another batch of question and continue until someones wins the round
+    </string>
+    <string name="who_will_win">4. Who will win a round?</string>
+    <string name="des_who_will_win">Strive to win the round!</string>
+    <string name="first_player_to_reach">First player to reach the round goal, wins the round</string>
+    <string name="winner_of_a_round">Winner of a round gets to select a "sexaul favor" which the loswer must perform
+    </string>
+    <string name="start_playing">Start playing!</string>
 </resources>
