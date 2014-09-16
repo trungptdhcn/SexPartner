@@ -14,7 +14,7 @@ public class SplashScreen extends Activity
     /**
      * Duration of wait *
      */
-    private final int SPLASH_DISPLAY_LENGTH = 1000;
+    private final int SPLASH_DISPLAY_LENGTH = 10000;
 
     /**
      * Called when the activity is first created.
@@ -33,7 +33,7 @@ public class SplashScreen extends Activity
             public void run()
             {
                 /* Create an Intent that will start the Menu-Activity. */
-                Intent mainIntent = new Intent(SplashScreen.this, CreatePINActivity.class);
+                Intent mainIntent = new Intent(SplashScreen.this, UserGuideActivity.class);
                 startActivity(mainIntent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
