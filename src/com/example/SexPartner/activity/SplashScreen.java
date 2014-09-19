@@ -14,7 +14,7 @@ public class SplashScreen extends Activity
     /**
      * Duration of wait *
      */
-    private final int SPLASH_DISPLAY_LENGTH = 10000;
+    private final int SPLASH_DISPLAY_LENGTH = 5000;
 
     /**
      * Called when the activity is first created.
@@ -25,7 +25,12 @@ public class SplashScreen extends Activity
         super.onCreate(icicle);
         setContentView(R.layout.splashscreen);
 
-        /* New Handler to start the Menu-Activity
+    }
+
+    @Override
+    protected void onResume()
+    {
+         /* New Handler to start the Menu-Activity
          * and close this Splash-Screen after some seconds.*/
         new Handler().postDelayed(new Runnable()
         {
@@ -36,8 +41,8 @@ public class SplashScreen extends Activity
                 Intent mainIntent = new Intent(SplashScreen.this, UserGuideActivity.class);
                 startActivity(mainIntent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                finish();
             }
         }, SPLASH_DISPLAY_LENGTH);
+        super.onResume();
     }
 }

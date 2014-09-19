@@ -42,7 +42,6 @@ public class FiveFragment extends Fragment implements View.OnClickListener
             case R.id.user_guide_five_screen_btStart:
                 Intent intentCallScreenLogin = new Intent(getActivity(), CreatePINActivity.class);
                 startActivity(intentCallScreenLogin);
-                getActivity().finish();
         }
     }
 }

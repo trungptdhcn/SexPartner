@@ -1,6 +1,7 @@
 package com.example.SexPartner.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +19,7 @@ public class FirstPartnerActivity extends Activity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.first_partner);
         btFindYourPartner = (Button) findViewById(R.id.first_partner_btLoginFaceBook);
-
+        btFindYourPartner.setOnClickListener(this);
     }
 
     @Override
@@ -27,7 +28,8 @@ public class FirstPartnerActivity extends Activity implements View.OnClickListen
         switch (view.getId())
         {
             case R.id.first_partner_btLoginFaceBook:
-
+                Intent intent = new Intent(this, LoginFaceBookActivity.class);
+                startActivity(intent);
                 break;
         }
     }

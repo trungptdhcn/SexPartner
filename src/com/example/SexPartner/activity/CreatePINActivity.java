@@ -146,7 +146,6 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
                 Intent intent = new Intent(this, FirstPartnerActivity.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                finish();
                 break;
         }
     }
