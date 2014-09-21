@@ -143,7 +143,7 @@ public class CreatePINActivity extends Activity implements View.OnClickListener
         switch (v.getId())
         {
             case R.id.create_pin_btContinue:
-                Intent intent = new Intent(this, FirstPartnerActivity.class);
+                Intent intent = new Intent(this, GetStartedActivity.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();

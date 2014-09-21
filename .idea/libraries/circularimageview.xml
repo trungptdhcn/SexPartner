@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="circularimageview">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/CircularImageView/bin/circularimageview.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

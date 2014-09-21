@@ -56,4 +56,17 @@
     <string name="winner_of_a_round">Winner of a round gets to select a "sexaul favor" which the loswer must perform
     </string>
     <string name="start_playing">Start playing!</string>
+
+    <!--Answering time-->
+    <string name="answering_time">ANSWERING TIME</string>
+    <string name="answering_time_description">WHERE IS YOUR FAVORITE PLACE TO HAVE SEX?</string>
+
+    <!--Guessing time-->
+    <string name="guessing_time">GUESSING TIME</string>
+
+    <!--Select your partner-->
+    <string name="select_your_partner">SELECT YOUR PARTNER</string>
+
+    <!--It's your turn-->
+    <string name="it_your_turn">ITS YOUR TURN</string>
 </resources>

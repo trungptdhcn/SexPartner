@@ -5,13 +5,13 @@ import android.os.Bundle;
 import com.example.SexPartner.R;
 
 /**
- * Created by Jodie Pham on 9/3/14.
+ * Created by Jodie Pham on 9/12/14.
  */
-public class FirstPartnerActivity extends Activity
+public class ChattingActivity extends Activity
 {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.first_partner);
+        setContentView(R.layout.chatting);
     }
 }
