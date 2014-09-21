@@ -17,6 +17,7 @@
 package com.example.SexPartner.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -79,7 +80,9 @@ public class ShowListFriendActivity extends FragmentActivity
                 @Override
                 public void onDoneButtonClicked(PickerFragment<?> fragment)
                 {
-                    finishActivity();
+                    Intent i = new Intent(ShowListFriendActivity.this,SelectYourPartnerActivity.class);
+                    startActivity(i);
+                    finish();
                 }
             });
             fragmentToShow = friendPickerFragment;
