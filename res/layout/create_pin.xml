@@ -5,6 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:gravity="center_horizontal"
+              android:background="@drawable/background"
         >
     <LinearLayout
             android:id="@+id/create_pin_llWelcome"
@@ -50,7 +51,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/Black"
                 android:maxLength="1"
-        />
+                />
         <EditText
                 android:id="@+id/create_pin_edtPIN2"
                 android:layout_width="match_parent"

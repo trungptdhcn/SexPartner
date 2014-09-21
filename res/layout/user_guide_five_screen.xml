@@ -4,7 +4,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/White">
+              android:background="@drawable/background">
     <TextView
             android:layout_width="match_parent"
             android:layout_height="@dimen/_40dp"
@@ -51,10 +51,10 @@
                     android:layout_marginLeft="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_50dp"
                     android:layout_height="wrap_content">
-                <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/ic_launcher"/>
+                <com.mikhaellopez.circularimageview.CircularImageView
+                        android:layout_width="@dimen/_100dp"
+                        android:layout_height="@dimen/_100dp"
+                        android:src="@drawable/background"/>
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -70,10 +70,10 @@
                     android:layout_marginLeft="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_50dp"
                     android:layout_height="wrap_content">
-                <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/ic_launcher"/>
+                <com.mikhaellopez.circularimageview.CircularImageView
+                        android:layout_width="@dimen/_100dp"
+                        android:layout_height="@dimen/_100dp"
+                        android:src="@drawable/background"/>
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

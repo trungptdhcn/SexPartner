@@ -56,7 +56,7 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     private static final String ID = "id";
     private static final String NAME = "name";
     private String userId;
-    private boolean multiSelect = true;
+    private boolean multiSelect = false;
     // default to Friends for backwards compatibility
     private FriendPickerType friendPickerType = FriendPickerType.FRIENDS;
     private List<String> preSelectedFriendIds = new ArrayList<String>();
@@ -238,7 +238,7 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
             }
 
         };
-        adapter.setShowCheckbox(true);
+        adapter.setShowCheckbox(false);
         adapter.setShowPicture(getShowPictures());
         adapter.setSortFields(Arrays.asList(new String[]{NAME}));
         adapter.setGroupByField(NAME);

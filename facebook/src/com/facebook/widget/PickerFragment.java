@@ -782,7 +782,6 @@ public abstract class PickerFragment<T extends GraphObject> extends Fragment
 
     private void onListItemClick(ListView listView, View v, int position)
     {
-        @SuppressWarnings("unchecked")
         T graphObject = (T) listView.getItemAtPosition(position);
         String id = adapter.getIdOfGraphObject(graphObject);
         selectionStrategy.toggleSelection(id);
@@ -1118,10 +1117,12 @@ public abstract class PickerFragment<T extends GraphObject> extends Fragment
         {
             if (selectedId != null && selectedId.equals(id))
             {
+                Toast.makeText(getActivity().getApplicationContext(), "yyyy", 1).show();
                 selectedId = null;
             }
             else
             {
+                Toast.makeText(getActivity().getApplicationContext(), "Partner Id: " + id, 1).show();
                 selectedId = id;
             }
         }
@@ -1185,10 +1186,12 @@ public abstract class PickerFragment<T extends GraphObject> extends Fragment
             {
                 if (selectedIds.contains(id))
                 {
+                    Toast.makeText(getActivity().getApplicationContext(), "yyyy", 1).show();
                     selectedIds.remove(id);
                 }
                 else
                 {
+                    Toast.makeText(getActivity().getApplicationContext(), "Partner Id: " + id, 1).show();
                     selectedIds.add(id);
                 }
             }

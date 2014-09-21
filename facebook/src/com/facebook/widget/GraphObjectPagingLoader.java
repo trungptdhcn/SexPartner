@@ -17,6 +17,7 @@
 package com.facebook.widget;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.content.Loader;
 import com.facebook.*;
@@ -27,6 +28,7 @@ import com.facebook.model.GraphObjectList;
 class GraphObjectPagingLoader<T extends GraphObject> extends Loader<SimpleGraphObjectCursor<T>>
 {
     private final Class<T> graphObjectClass;
+    public GraphObjectList<T> data;
     private boolean skipRoundtripIfCached;
     private Request originalRequest;
     private Request currentRequest;
@@ -226,7 +228,7 @@ class GraphObjectPagingLoader<T extends GraphObject> extends Loader<SimpleGraphO
         PagedResults result = response.getGraphObjectAs(PagedResults.class);
         boolean fromCache = response.getIsFromCache();
 
-        GraphObjectList<T> data = result.getData().castToListOf(graphObjectClass);
+        data = result.getData().castToListOf(graphObjectClass);
         boolean haveData = data.size() > 0;
 
         if (haveData)

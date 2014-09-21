@@ -64,7 +64,7 @@ public class ShowListFriendActivity extends FragmentActivity
             else
             {
                 friendPickerFragment = (FriendPickerFragment) manager.findFragmentById(R.id.picker_fragment);
-                ;
+
             }
 
             friendPickerFragment.setOnErrorListener(new PickerFragment.OnErrorListener()
@@ -80,7 +80,7 @@ public class ShowListFriendActivity extends FragmentActivity
                 @Override
                 public void onDoneButtonClicked(PickerFragment<?> fragment)
                 {
-                    Intent i = new Intent(ShowListFriendActivity.this,SelectYourPartnerActivity.class);
+                    Intent i = new Intent(ShowListFriendActivity.this, SelectYourPartnerActivity.class);
                     startActivity(i);
                     finish();
                 }
