@@ -2,9 +2,17 @@ package com.example.SexPartner.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
+import android.util.Log;
 import com.example.SexPartner.R;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by Jodie Pham on 9/3/14.
@@ -24,7 +32,6 @@ public class SplashScreen extends Activity
     {
         super.onCreate(icicle);
         setContentView(R.layout.splashscreen);
-
     }
 
     @Override

@@ -10,14 +10,14 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "FRIEND")
 public class Friend
 {
-    @DatabaseField(columnName = "USER_ID")
-    protected String userId;
     @DatabaseField(columnName = "_ID", generatedId = true)
     private Long id;
+    @DatabaseField(columnName = "USER_ID")
+    protected String userId;
     @DatabaseField(columnName = "USER_NAME")
-    private Long userName;
+    private String userName;
     @DatabaseField(columnName = "URL_PHOTO")
-    private Long urlPhoto;
+    private String urlPhoto;
 
     public Long getId()
     {
@@ -39,22 +39,22 @@ public class Friend
         this.userId = userId;
     }
 
-    public Long getUserName()
+    public String getUserName()
     {
         return userName;
     }
 
-    public void setUserName(Long userName)
+    public void setUserName(String userName)
     {
         this.userName = userName;
     }
 
-    public Long getUrlPhoto()
+    public String getUrlPhoto()
     {
         return urlPhoto;
     }
 
-    public void setUrlPhoto(Long urlPhoto)
+    public void setUrlPhoto(String urlPhoto)
     {
         this.urlPhoto = urlPhoto;
     }

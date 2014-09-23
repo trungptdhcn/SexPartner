@@ -2,16 +2,30 @@ package com.example.SexPartner.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import com.example.SexPartner.R;
+import com.example.SexPartner.backend.model.Friend;
+import com.example.SexPartner.backend.model.FriendDAO;
+import com.example.SexPartner.backend.model.ormlite.DatabaseHelper;
+import com.example.SexPartner.dto.UserDTO;
+import com.example.SexPartner.dto.UserListDTO;
 import com.facebook.*;
 import com.facebook.widget.LoginButton;
+import com.google.gson.Gson;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Jodie Pham on 9/3/14.
@@ -21,6 +35,8 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
     private static final String TAG = "MyActivity";
     private UiLifecycleHelper uiHelper;
     private Button btGetList;
+    private FriendDAO friendDAO;
+    private DatabaseHelper databaseHelper;
     Session.NewPermissionsRequest newPermissionsRequest;
 
     private Session.StatusCallback statusCallback = new Session.StatusCallback()
@@ -40,7 +56,10 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
         uiHelper = new UiLifecycleHelper(this, statusCallback);
         uiHelper.onCreate(savedInstanceState);
         setContentView(R.layout.get_started);
+        databaseHelper = new DatabaseHelper(this);
+        friendDAO = new FriendDAO(databaseHelper);
         LoginButton authButton = (LoginButton) findViewById(R.id.get_started_btFindYourPartner);
+        btGetList = (Button)findViewById(R.id.get_started_btGetList);
         authButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -49,22 +68,20 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
                 onClickLogin();
             }
         });
+        btGetList.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent i = new Intent(getApplicationContext(),SelectYourPartnerActivity.class);
+                startActivity(i);
+            }
+        });
     }
 
 
     private void onClickLogin()
     {
-//        Session session = Session.getActiveSession();
-//        if (!session.isOpened() && !session.isClosed())
-//        {
-//            session.openForRead(new Session.OpenRequest(this)
-//                    .setPermissions(Arrays.asList("public_profile", "user_friends"))
-//                    .setCallback(statusCallback));
-//        }
-//        else
-//        {
-//            Session.openActiveSession(this, true, statusCallback);
-//        }
         Session session = Session.getActiveSession();
         if (session == null)
         {
@@ -81,7 +98,9 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
         else
         {
             session = Session.openActiveSession(GetStartedActivity.this, true, statusCallback);
+            getListFriend();
         }
+
     }
 
     private void onSessionStateChange(Session session, SessionState state, Exception exception)
@@ -147,28 +166,57 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
 
     public void getListFriend()
     {
-        new AsyncTask<Void, Void, Void>()
-        {
-
-            @Override
-            protected Void doInBackground(Void... params)
-            {
-                new Request(
-                        Session.getActiveSession(),
-                        "me/taggable_friends",
-                        null,
-                        HttpMethod.GET,
-                        new Request.Callback()
+        Session session = Session.getActiveSession();
+//        if (session != null &&
+//                (session.isOpened() || session.isClosed()))
+//        {
+        new Request(
+                Session.getActiveSession(),
+                "me/taggable_friends",
+                null,
+                HttpMethod.GET,
+                new Request.Callback()
+                {
+                    public void onCompleted(Response response)
+                    {
+                        UserListDTO userListDTO = new Gson().fromJson(response.getRawResponse(), UserListDTO.class);
+                        if(userListDTO != null)
                         {
-                            public void onCompleted(Response response)
+                            List<UserDTO> userDTOs = userListDTO.getUserDTOList();
+                            List<Friend> friends = new ArrayList<Friend>();
+                            for (UserDTO userDTO : userDTOs)
                             {
-                                Log.d("trung", response.toString());
+                                Friend friend = new Friend();
+                                friend.setUserId(userDTO.getId());
+                                friend.setUserName(userDTO.getName());
+                                friend.setUrlPhoto(userDTO.getPictureDTO().getDataUrlDTO().getUrl());
+                                friends.add(friend);
                             }
+                            try
+                            {
+                                friendDAO.create(friends);
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                            Log.i(TAG, "Logged in...");
                         }
-                ).executeAndWait();
-                return null;
-            }
-        }.execute();
+
+                    }
+                }
+        ).executeAsync();
+//        }
+//        new AsyncTask<Void, Void, Void>()
+//        {
+//
+//            @Override
+//            protected Void doInBackground(Void... params)
+//            {
+//
+//                return null;
+//            }
+//        }.execute();
 
     }
 

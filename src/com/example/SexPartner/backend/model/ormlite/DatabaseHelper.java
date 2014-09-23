@@ -31,7 +31,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
-    public Dao<Friend, String> getVehicleDAO() throws SQLException
+    public Dao<Friend, String> getFriendDAO() throws SQLException
     {
         if (friendDAO == null)
         {

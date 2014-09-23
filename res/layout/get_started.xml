@@ -17,6 +17,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/btn_find_partner_normal"
                 android:layout_centerHorizontal="true"/>
+
         <TextView
                 android:id="@+id/get_started_tvFindYourPartner"
                 android:layout_width="wrap_content"
@@ -32,4 +33,9 @@
     <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"></RelativeLayout>
+    <Button
+            android:id="@+id/get_started_btGetList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="get Firend"/>
 </RelativeLayout>
