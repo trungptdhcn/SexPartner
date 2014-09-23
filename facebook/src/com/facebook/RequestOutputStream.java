@@ -16,7 +16,6 @@
 
 package com.facebook;
 
-interface RequestOutputStream
-{
+interface RequestOutputStream {
     void setCurrentRequest(Request r);
 }

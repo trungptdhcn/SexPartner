@@ -25,8 +25,7 @@ package com.facebook;
  * enum represents the states of the state machine.
  * </p>
  */
-public enum SessionState
-{
+public enum SessionState {
     /**
      * Indicates that the Session has not yet been opened and has no cached
      * token. Opening a Session in this state will involve user interaction.
@@ -85,38 +84,34 @@ public enum SessionState
 
     private final Category category;
 
-    SessionState(Category category)
-    {
+    SessionState(Category category) {
         this.category = category;
     }
 
     /**
      * Returns a boolean indicating whether the state represents a successfully
      * opened state in which the Session can be used with a {@link Request}.
-     *
+     * 
      * @return a boolean indicating whether the state represents a successfully
-     * opened state in which the Session can be used with a
-     * {@link Request}.
+     *         opened state in which the Session can be used with a
+     *         {@link Request}.
      */
-    public boolean isOpened()
-    {
+    public boolean isOpened() {
         return this.category == Category.OPENED_CATEGORY;
     }
 
     /**
      * Returns a boolean indicating whether the state represents a closed
      * Session that can no longer be used with a {@link Request}.
-     *
+     * 
      * @return a boolean indicating whether the state represents a closed
      * Session that can no longer be used with a {@link Request}.
      */
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return this.category == Category.CLOSED_CATEGORY;
     }
 
-    private enum Category
-    {
+    private enum Category {
         CREATED_CATEGORY, OPENED_CATEGORY, CLOSED_CATEGORY
     }
 }

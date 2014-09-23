@@ -20,43 +20,38 @@ import com.facebook.Settings;
 
 import java.util.concurrent.Executor;
 
-class WorkQueue
-{
+class WorkQueue {
     public static final int DEFAULT_MAX_CONCURRENT = 8;
 
     private final Object workLock = new Object();
+    private WorkNode pendingJobs;
+
     private final int maxConcurrent;
     private final Executor executor;
-    private WorkNode pendingJobs;
+
     private WorkNode runningJobs = null;
     private int runningCount = 0;
 
-    WorkQueue()
-    {
+    WorkQueue() {
         this(DEFAULT_MAX_CONCURRENT);
     }
 
-    WorkQueue(int maxConcurrent)
-    {
+    WorkQueue(int maxConcurrent) {
         this(maxConcurrent, Settings.getExecutor());
     }
 
-    WorkQueue(int maxConcurrent, Executor executor)
-    {
+    WorkQueue(int maxConcurrent, Executor executor) {
         this.maxConcurrent = maxConcurrent;
         this.executor = executor;
     }
 
-    WorkItem addActiveWorkItem(Runnable callback)
-    {
+    WorkItem addActiveWorkItem(Runnable callback) {
         return addActiveWorkItem(callback, true);
     }
 
-    WorkItem addActiveWorkItem(Runnable callback, boolean addToFront)
-    {
+    WorkItem addActiveWorkItem(Runnable callback, boolean addToFront) {
         WorkNode node = new WorkNode(callback);
-        synchronized (workLock)
-        {
+        synchronized (workLock) {
             pendingJobs = node.addToList(pendingJobs, addToFront);
         }
 
@@ -64,18 +59,14 @@ class WorkQueue
         return node;
     }
 
-    void validate()
-    {
-        synchronized (workLock)
-        {
+    void validate() {
+        synchronized (workLock) {
             // Verify that all running items know they are running, and counts match
             int count = 0;
 
-            if (runningJobs != null)
-            {
+            if (runningJobs != null) {
                 WorkNode walk = runningJobs;
-                do
-                {
+                do {
                     walk.verify(true);
                     count++;
                     walk = walk.getNext();
@@ -86,28 +77,22 @@ class WorkQueue
         }
     }
 
-    private void startItem()
-    {
+    private void startItem() {
         finishItemAndStartNew(null);
     }
 
-    private void finishItemAndStartNew(WorkNode finished)
-    {
+    private void finishItemAndStartNew(WorkNode finished) {
         WorkNode ready = null;
 
-        synchronized (workLock)
-        {
-            if (finished != null)
-            {
+        synchronized (workLock) {
+            if (finished != null) {
                 runningJobs = finished.removeFromList(runningJobs);
                 runningCount--;
             }
 
-            if (runningCount < maxConcurrent)
-            {
+            if (runningCount < maxConcurrent) {
                 ready = pendingJobs; // Head of the pendingJobs queue
-                if (ready != null)
-                {
+                if (ready != null) {
                     // The Queue reassignments are necessary since 'ready' might have been
                     // added / removed from the front of either queue, which changes its
                     // respective head.
@@ -120,59 +105,38 @@ class WorkQueue
             }
         }
 
-        if (ready != null)
-        {
+        if (ready != null) {
             execute(ready);
         }
     }
 
-    private void execute(final WorkNode node)
-    {
-        executor.execute(new Runnable()
-        {
+    private void execute(final WorkNode node) {
+        executor.execute(new Runnable() {
             @Override
-            public void run()
-            {
-                try
-                {
+            public void run() {
+                try {
                     node.getCallback().run();
-                }
-                finally
-                {
+                } finally {
                     finishItemAndStartNew(node);
                 }
             }
         });
     }
 
-    interface WorkItem
-    {
-        boolean cancel();
-
-        boolean isRunning();
-
-        void moveToFront();
-    }
-
-    private class WorkNode implements WorkItem
-    {
+    private class WorkNode implements WorkItem {
         private final Runnable callback;
         private WorkNode next;
         private WorkNode prev;
         private boolean isRunning;
 
-        WorkNode(Runnable callback)
-        {
+        WorkNode(Runnable callback) {
             this.callback = callback;
         }
 
         @Override
-        public boolean cancel()
-        {
-            synchronized (workLock)
-            {
-                if (!isRunning())
-                {
+        public boolean cancel() {
+            synchronized (workLock) {
+                if (!isRunning()) {
                     pendingJobs = removeFromList(pendingJobs);
                     return true;
                 }
@@ -182,12 +146,9 @@ class WorkQueue
         }
 
         @Override
-        public void moveToFront()
-        {
-            synchronized (workLock)
-            {
-                if (!isRunning())
-                {
+        public void moveToFront() {
+            synchronized (workLock) {
+                if (!isRunning()) {
                     pendingJobs = removeFromList(pendingJobs);
                     pendingJobs = addToList(pendingJobs, true);
                 }
@@ -195,37 +156,29 @@ class WorkQueue
         }
 
         @Override
-        public boolean isRunning()
-        {
+        public boolean isRunning() {
             return isRunning;
         }
 
-        Runnable getCallback()
-        {
+        Runnable getCallback() {
             return callback;
         }
 
-        WorkNode getNext()
-        {
+        WorkNode getNext() {
             return next;
         }
 
-        void setIsRunning(boolean isRunning)
-        {
+        void setIsRunning(boolean isRunning) {
             this.isRunning = isRunning;
         }
 
-        WorkNode addToList(WorkNode list, boolean addToFront)
-        {
+        WorkNode addToList(WorkNode list, boolean addToFront) {
             assert next == null;
             assert prev == null;
 
-            if (list == null)
-            {
+            if (list == null) {
                 list = next = prev = this;
-            }
-            else
-            {
+            } else {
                 next = list;
                 prev = list.prev;
                 next.prev = prev.next = this;
@@ -234,19 +187,14 @@ class WorkQueue
             return addToFront ? this : list;
         }
 
-        WorkNode removeFromList(WorkNode list)
-        {
+        WorkNode removeFromList(WorkNode list) {
             assert next != null;
             assert prev != null;
 
-            if (list == this)
-            {
-                if (next == this)
-                {
+            if (list == this) {
+                if (next == this) {
                     list = null;
-                }
-                else
-                {
+                } else {
                     list = next;
                 }
             }
@@ -258,11 +206,16 @@ class WorkQueue
             return list;
         }
 
-        void verify(boolean shouldBeRunning)
-        {
+        void verify(boolean shouldBeRunning) {
             assert prev.next == this;
             assert next.prev == this;
             assert isRunning() == shouldBeRunning;
         }
+    }
+
+    interface WorkItem {
+        boolean cancel();
+        boolean isRunning();
+        void moveToFront();
     }
 }

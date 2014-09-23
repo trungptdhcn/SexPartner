@@ -20,15 +20,12 @@ package com.facebook;
  * Predefined event and parameter names for logging events common to many apps. Logging occurs through the
  * {@link AppEventsLogger#logEvent(String, android.os.Bundle)} family of methods.
  */
-public class AppEventsConstants
-{
+public class AppEventsConstants {
     // Event names
 
     // General purpose
 
-    /**
-     * Log this event when an app is being activated.
-     */
+    /** Log this event when an app is being activated. */
     public static final String EVENT_NAME_ACTIVATED_APP = "fb_mobile_activate_app";
 
     public static final String EVENT_NAME_DEACTIVATED_APP = "fb_mobile_deactivate_app";
@@ -37,19 +34,13 @@ public class AppEventsConstants
 
     public static final String EVENT_NAME_TIME_BETWEEN_SESSIONS = "fb_mobile_time_between_sessions";
 
-    /**
-     * Log this event when a user has completed registration with the app.
-     */
+    /** Log this event when a user has completed registration with the app. */
     public static final String EVENT_NAME_COMPLETED_REGISTRATION = "fb_mobile_complete_registration";
 
-    /**
-     * Log this event when a user has viewed a form of content in the app.
-     */
+    /** Log this event when a user has viewed a form of content in the app. */
     public static final String EVENT_NAME_VIEWED_CONTENT = "fb_mobile_content_view";
 
-    /**
-     * Log this event when a user has performed a search within the app.
-     */
+    /** Log this event when a user has performed a search within the app. */
     public static final String EVENT_NAME_SEARCHED = "fb_mobile_search";
 
     /**
@@ -58,9 +49,7 @@ public class AppEventsConstants
      */
     public static final String EVENT_NAME_RATED = "fb_mobile_rate";
 
-    /**
-     * Log this event when the user has completed a tutorial in the app.
-     */
+    /** Log this event when the user has completed a tutorial in the app. */
     public static final String EVENT_NAME_COMPLETED_TUTORIAL = "fb_mobile_tutorial_completion";
 
     // Ecommerce related
@@ -83,9 +72,7 @@ public class AppEventsConstants
      */
     public static final String EVENT_NAME_INITIATED_CHECKOUT = "fb_mobile_initiated_checkout";
 
-    /**
-     * Log this event when the user has entered their payment info.
-     */
+    /** Log this event when the user has entered their payment info. */
     public static final String EVENT_NAME_ADDED_PAYMENT_INFO = "fb_mobile_add_payment_info";
 
     /**
@@ -97,14 +84,10 @@ public class AppEventsConstants
 
     // Gaming related
 
-    /**
-     * Log this event when the user has achieved a level in the app.
-     */
+    /** Log this event when the user has achieved a level in the app. */
     public static final String EVENT_NAME_ACHIEVED_LEVEL = "fb_mobile_level_achieved";
 
-    /**
-     * Log this event when the user has unlocked an achievement in the app.
-     */
+    /** Log this event when the user has unlocked an achievement in the app. */
     public static final String EVENT_NAME_UNLOCKED_ACHIEVEMENT = "fb_mobile_achievement_unlocked";
 
     /**
@@ -112,6 +95,8 @@ public class AppEventsConstants
      * The valueToSum passed to logEvent should be the number of credits spent.
      */
     public static final String EVENT_NAME_SPENT_CREDITS = "fb_mobile_spent_credits";
+
+
 
 
     // Event parameters
@@ -140,9 +125,7 @@ public class AppEventsConstants
      */
     public static final String EVENT_PARAM_CONTENT_ID = "fb_content_id";
 
-    /**
-     * Parameter key used to specify the string provided by the user for a search operation.
-     */
+    /** Parameter key used to specify the string provided by the user for a search operation. */
     public static final String EVENT_PARAM_SEARCH_STRING = "fb_search_string";
 
     /**
@@ -169,9 +152,7 @@ public class AppEventsConstants
      */
     public static final String EVENT_PARAM_NUM_ITEMS = "fb_num_items";
 
-    /**
-     * Parameter key used to specify the level achieved in a EVENT_NAME_LEVEL_ACHIEVED event.
-     */
+    /** Parameter key used to specify the level achieved in a EVENT_NAME_LEVEL_ACHIEVED event. */
     public static final String EVENT_PARAM_LEVEL = "fb_level";
 
     /**
@@ -188,13 +169,9 @@ public class AppEventsConstants
 
     // Parameter values
 
-    /**
-     * Yes-valued parameter value to be used with parameter keys that need a Yes/No value
-     */
+    /** Yes-valued parameter value to be used with parameter keys that need a Yes/No value */
     public static final String EVENT_PARAM_VALUE_YES = "1";
 
-    /**
-     * No-valued parameter value to be used with parameter keys that need a Yes/No value
-     */
+    /** No-valued parameter value to be used with parameter keys that need a Yes/No value */
     public static final String EVENT_PARAM_VALUE_NO = "0";
 }

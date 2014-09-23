@@ -27,21 +27,19 @@ import android.os.*;
  * any of the classes in this package is unsupported, and they may be modified or removed without warning at
  * any time.
  */
-abstract public class PlatformServiceClient implements ServiceConnection
-{
+abstract public class PlatformServiceClient implements ServiceConnection {
     private final Context context;
     private final Handler handler;
-    private final String applicationId;
-    private final int protocolVersion;
     private CompletedListener listener;
     private boolean running;
     private Messenger sender;
     private int requestMessage;
     private int replyMessage;
+    private final String applicationId;
+    private final int protocolVersion;
 
     public PlatformServiceClient(Context context, int requestMessage, int replyMessage, int protocolVersion,
-                                 String applicationId)
-    {
+            String applicationId) {
         Context applicationContext = context.getApplicationContext();
 
         this.context = (applicationContext != null) ? applicationContext : context;
@@ -50,73 +48,59 @@ abstract public class PlatformServiceClient implements ServiceConnection
         this.applicationId = applicationId;
         this.protocolVersion = protocolVersion;
 
-        handler = new Handler()
-        {
+        handler = new Handler() {
             @Override
-            public void handleMessage(Message message)
-            {
+            public void handleMessage(Message message) {
                 PlatformServiceClient.this.handleMessage(message);
             }
         };
     }
 
-    public void setCompletedListener(CompletedListener listener)
-    {
+    public void setCompletedListener(CompletedListener listener) {
         this.listener = listener;
     }
 
-    protected Context getContext()
-    {
+    protected Context getContext() {
         return context;
     }
 
-    public boolean start()
-    {
-        if (running)
-        {
+    public boolean start() {
+        if (running) {
             return false;
         }
 
         // Make sure that the service can handle the requested protocol version
         int availableVersion = NativeProtocol.getLatestAvailableProtocolVersionForService(context, protocolVersion);
-        if (availableVersion == NativeProtocol.NO_PROTOCOL_AVAILABLE)
-        {
+        if (availableVersion == NativeProtocol.NO_PROTOCOL_AVAILABLE) {
             return false;
         }
 
         Intent intent = NativeProtocol.createPlatformServiceIntent(context);
-        if (intent == null)
-        {
+        if (intent == null) {
             return false;
-        }
-        else
-        {
+        } else {
             running = true;
             context.bindService(intent, this, Context.BIND_AUTO_CREATE);
             return true;
         }
     }
 
-    public void cancel()
-    {
+    public void cancel() {
         running = false;
     }
 
-    public void onServiceConnected(ComponentName name, IBinder service)
-    {
+    public void onServiceConnected(ComponentName name, IBinder service) {
         sender = new Messenger(service);
         sendMessage();
     }
 
-    public void onServiceDisconnected(ComponentName name)
-    {
+    public void onServiceDisconnected(ComponentName name) {
         sender = null;
         context.unbindService(this);
         callback(null);
     }
 
-    private void sendMessage()
-    {
+    private void sendMessage() {
         Bundle data = new Bundle();
         data.putString(NativeProtocol.EXTRA_APPLICATION_ID, applicationId);
 
@@ -127,53 +111,41 @@ abstract public class PlatformServiceClient implements ServiceConnection
         request.setData(data);
         request.replyTo = new Messenger(handler);
 
-        try
-        {
+        try {
             sender.send(request);
-        }
-        catch (RemoteException e)
-        {
+        } catch (RemoteException e) {
             callback(null);
         }
     }
 
     protected abstract void populateRequestBundle(Bundle data);
 
-    protected void handleMessage(Message message)
-    {
-        if (message.what == replyMessage)
-        {
+    protected void handleMessage(Message message) {
+        if (message.what == replyMessage) {
             Bundle extras = message.getData();
             String errorType = extras.getString(NativeProtocol.STATUS_ERROR_TYPE);
-            if (errorType != null)
-            {
+            if (errorType != null) {
                 callback(null);
-            }
-            else
-            {
+            } else {
                 callback(extras);
             }
             context.unbindService(this);
         }
     }
 
-    private void callback(Bundle result)
-    {
-        if (!running)
-        {
+    private void callback(Bundle result) {
+        if (!running) {
             return;
         }
         running = false;
 
         CompletedListener callback = listener;
-        if (callback != null)
-        {
+        if (callback != null) {
             callback.completed(result);
         }
     }
 
-    public interface CompletedListener
-    {
+    public interface CompletedListener {
         void completed(Bundle result);
     }
 }

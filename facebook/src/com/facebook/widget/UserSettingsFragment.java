@@ -49,14 +49,15 @@ import java.util.List;
  * Developers can override the use of the active session by calling
  * the {@link #setSession(com.facebook.Session)} method.
  */
-public class UserSettingsFragment extends FacebookFragment
-{
+public class UserSettingsFragment extends FacebookFragment {
 
     private static final String NAME = "name";
     private static final String ID = "id";
     private static final String PICTURE = "picture";
-    private static final String REQUEST_FIELDS = TextUtils.join(",", new String[]{ID, NAME, PICTURE});
     private static final String FIELDS = "fields";
+    
+    private static final String REQUEST_FIELDS = TextUtils.join(",", new String[] {ID, NAME, PICTURE});
+
     private LoginButton loginButton;
     private LoginButton.LoginButtonProperties loginButtonProperties = new LoginButton.LoginButtonProperties();
     private TextView connectedStateLabel;
@@ -67,40 +68,30 @@ public class UserSettingsFragment extends FacebookFragment
     private Session.StatusCallback sessionStatusCallback;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.com_facebook_usersettingsfragment, container, false);
         loginButton = (LoginButton) view.findViewById(R.id.com_facebook_usersettingsfragment_login_button);
         loginButton.setProperties(loginButtonProperties);
         loginButton.setFragment(this);
-        loginButton.setReadPermissions(Arrays.asList("user_friends", "user_status"));
         loginButton.setLoginLogoutEventName(AnalyticsEvents.EVENT_USER_SETTINGS_USAGE);
 
         Session session = getSession();
-        if (session != null && !session.equals(Session.getActiveSession()))
-        {
-            Session.NewPermissionsRequest newPermissionsRequest = new Session
-                    .NewPermissionsRequest(this, Arrays.asList("user_friends"));
-            session.requestNewReadPermissions(newPermissionsRequest);
+        if (session != null && !session.equals(Session.getActiveSession())) {
             loginButton.setSession(session);
         }
         connectedStateLabel = (TextView) view.findViewById(R.id.com_facebook_usersettingsfragment_profile_name);
-
+        
         // if no background is set for some reason, then default to Facebook blue
-        if (view.getBackground() == null)
-        {
+        if (view.getBackground() == null) {
             view.setBackgroundColor(getResources().getColor(R.color.com_facebook_blue));
-        }
-        else
-        {
+        } else {
             view.getBackground().setDither(true);
         }
         return view;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
     }
@@ -109,8 +100,7 @@ public class UserSettingsFragment extends FacebookFragment
      * @throws com.facebook.FacebookException if errors occur during the loading of user information
      */
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         fetchUserInfo();
         updateUI();
@@ -128,27 +118,13 @@ public class UserSettingsFragment extends FacebookFragment
      * @throws com.facebook.FacebookException if errors occur during the loading of user information
      */
     @Override
-    public void setSession(Session newSession)
-    {
+    public void setSession(Session newSession) {
         super.setSession(newSession);
-        if (loginButton != null)
-        {
+        if (loginButton != null) {
             loginButton.setSession(newSession);
         }
         fetchUserInfo();
         updateUI();
-    }
-
-    /**
-     * Gets the default audience to use when the session is opened.
-     * This value is only useful when specifying write permissions for the native
-     * login dialog.
-     *
-     * @return the default audience value to use
-     */
-    public SessionDefaultAudience getDefaultAudience()
-    {
-        return loginButtonProperties.getDefaultAudience();
     }
 
     /**
@@ -158,9 +134,19 @@ public class UserSettingsFragment extends FacebookFragment
      *
      * @param defaultAudience the default audience value to use
      */
-    public void setDefaultAudience(SessionDefaultAudience defaultAudience)
-    {
+    public void setDefaultAudience(SessionDefaultAudience defaultAudience) {
         loginButtonProperties.setDefaultAudience(defaultAudience);
+    }
+
+    /**
+     * Gets the default audience to use when the session is opened.
+     * This value is only useful when specifying write permissions for the native
+     * login dialog.
+     *
+     * @return the default audience value to use
+     */
+    public SessionDefaultAudience getDefaultAudience() {
+        return loginButtonProperties.getDefaultAudience();
     }
 
     /**
@@ -181,10 +167,10 @@ public class UserSettingsFragment extends FacebookFragment
      * (by managing the session explicitly).
      *
      * @param permissions the read permissions to use
+     *
      * @throws UnsupportedOperationException if setPublishPermissions has been called
      */
-    public void setReadPermissions(List<String> permissions)
-    {
+    public void setReadPermissions(List<String> permissions) {
         loginButtonProperties.setReadPermissions(permissions, getSession());
     }
 
@@ -206,10 +192,10 @@ public class UserSettingsFragment extends FacebookFragment
      * (by managing the session explicitly).
      *
      * @param permissions the read permissions to use
+     *
      * @throws UnsupportedOperationException if setPublishPermissions has been called
      */
-    public void setReadPermissions(String... permissions)
-    {
+    public void setReadPermissions(String... permissions) {
         loginButtonProperties.setReadPermissions(Arrays.asList(permissions), getSession());
     }
 
@@ -231,11 +217,11 @@ public class UserSettingsFragment extends FacebookFragment
      * (by managing the session explicitly).
      *
      * @param permissions the read permissions to use
+     *
      * @throws UnsupportedOperationException if setReadPermissions has been called
-     * @throws IllegalArgumentException      if permissions is null or empty
+     * @throws IllegalArgumentException if permissions is null or empty
      */
-    public void setPublishPermissions(List<String> permissions)
-    {
+    public void setPublishPermissions(List<String> permissions) {
         loginButtonProperties.setPublishPermissions(permissions, getSession());
     }
 
@@ -257,11 +243,11 @@ public class UserSettingsFragment extends FacebookFragment
      * (by managing the session explicitly).
      *
      * @param permissions the read permissions to use
+     *
      * @throws UnsupportedOperationException if setReadPermissions has been called
-     * @throws IllegalArgumentException      if permissions is null or empty
+     * @throws IllegalArgumentException if permissions is null or empty
      */
-    public void setPublishPermissions(String... permissions)
-    {
+    public void setPublishPermissions(String... permissions) {
         loginButtonProperties.setPublishPermissions(Arrays.asList(permissions), getSession());
     }
 
@@ -269,23 +255,8 @@ public class UserSettingsFragment extends FacebookFragment
     /**
      * Clears the permissions currently associated with this LoginButton.
      */
-    public void clearPermissions()
-    {
+    public void clearPermissions() {
         loginButtonProperties.clearPermissions();
-    }
-
-    /**
-     * Gets the login behavior for the session that will be opened. If null is returned,
-     * the default ({@link SessionLoginBehavior SessionLoginBehavior.SSO_WITH_FALLBACK}
-     * will be used.
-     *
-     * @return loginBehavior The {@link SessionLoginBehavior SessionLoginBehavior} that
-     * specifies what behaviors should be attempted during
-     * authorization.
-     */
-    public SessionLoginBehavior getLoginBehavior()
-    {
-        return loginButtonProperties.getLoginBehavior();
     }
 
     /**
@@ -297,19 +268,21 @@ public class UserSettingsFragment extends FacebookFragment
      *                      specifies what behaviors should be attempted during
      *                      authorization.
      */
-    public void setLoginBehavior(SessionLoginBehavior loginBehavior)
-    {
+    public void setLoginBehavior(SessionLoginBehavior loginBehavior) {
         loginButtonProperties.setLoginBehavior(loginBehavior);
     }
 
     /**
-     * Returns the current OnErrorListener for this instance of UserSettingsFragment.
+     * Gets the login behavior for the session that will be opened. If null is returned,
+     * the default ({@link SessionLoginBehavior SessionLoginBehavior.SSO_WITH_FALLBACK}
+     * will be used.
      *
-     * @return The OnErrorListener
+     * @return loginBehavior The {@link SessionLoginBehavior SessionLoginBehavior} that
+     *                      specifies what behaviors should be attempted during
+     *                      authorization.
      */
-    public LoginButton.OnErrorListener getOnErrorListener()
-    {
-        return loginButtonProperties.getOnErrorListener();
+    public SessionLoginBehavior getLoginBehavior() {
+        return loginButtonProperties.getLoginBehavior();
     }
 
     /**
@@ -318,20 +291,17 @@ public class UserSettingsFragment extends FacebookFragment
      *
      * @param onErrorListener The listener object to set
      */
-    public void setOnErrorListener(LoginButton.OnErrorListener onErrorListener)
-    {
+    public void setOnErrorListener(LoginButton.OnErrorListener onErrorListener) {
         loginButtonProperties.setOnErrorListener(onErrorListener);
     }
 
     /**
-     * Sets the callback interface that will be called whenever the status of the Session
-     * associated with this LoginButton changes.
+     * Returns the current OnErrorListener for this instance of UserSettingsFragment.
      *
-     * @return the callback interface
+     * @return The OnErrorListener
      */
-    public Session.StatusCallback getSessionStatusCallback()
-    {
-        return sessionStatusCallback;
+    public LoginButton.OnErrorListener getOnErrorListener() {
+        return loginButtonProperties.getOnErrorListener();
     }
 
     /**
@@ -340,48 +310,47 @@ public class UserSettingsFragment extends FacebookFragment
      *
      * @param callback the callback interface
      */
-    public void setSessionStatusCallback(Session.StatusCallback callback)
-    {
+    public void setSessionStatusCallback(Session.StatusCallback callback) {
         this.sessionStatusCallback = callback;
     }
 
+    /**
+     * Sets the callback interface that will be called whenever the status of the Session
+     * associated with this LoginButton changes.
+
+     * @return the callback interface
+     */
+    public Session.StatusCallback getSessionStatusCallback() {
+        return sessionStatusCallback;
+    }
+
     @Override
-    protected void onSessionStateChange(SessionState state, Exception exception)
-    {
+    protected void onSessionStateChange(SessionState state, Exception exception) {
         fetchUserInfo();
         updateUI();
 
-        if (sessionStatusCallback != null)
-        {
+        if (sessionStatusCallback != null) {
             sessionStatusCallback.call(getSession(), state, exception);
         }
     }
 
     // For Testing Only
-    List<String> getPermissions()
-    {
+    List<String> getPermissions() {
         return loginButtonProperties.getPermissions();
     }
 
-    private void fetchUserInfo()
-    {
+    private void fetchUserInfo() {
         final Session currentSession = getSession();
-        if (currentSession != null && currentSession.isOpened())
-        {
-            if (currentSession != userInfoSession)
-            {
-                Request request = Request.newMeRequest(currentSession, new Request.GraphUserCallback()
-                {
+        if (currentSession != null && currentSession.isOpened()) {
+            if (currentSession != userInfoSession) {
+                Request request = Request.newMeRequest(currentSession, new Request.GraphUserCallback() {
                     @Override
-                    public void onCompleted(GraphUser me, Response response)
-                    {
-                        if (currentSession == getSession())
-                        {
+                    public void onCompleted(GraphUser me, Response response) {
+                        if (currentSession == getSession()) {
                             user = me;
                             updateUI();
                         }
-                        if (response.getError() != null)
-                        {
+                        if (response.getError() != null) {
                             loginButton.handleError(response.getError().getException());
                         }
                     }
@@ -392,49 +361,36 @@ public class UserSettingsFragment extends FacebookFragment
                 Request.executeBatchAsync(request);
                 userInfoSession = currentSession;
             }
-        }
-        else
-        {
+        } else {
             user = null;
         }
     }
-
-    private void updateUI()
-    {
-        if (!isAdded())
-        {
+    
+    private void updateUI() {
+        if (!isAdded()) {
             return;
         }
-        if (isSessionOpen())
-        {
+        if (isSessionOpen()) {
             connectedStateLabel.setTextColor(getResources().getColor(R.color.com_facebook_usersettingsfragment_connected_text_color));
             connectedStateLabel.setShadowLayer(1f, 0f, -1f,
                     getResources().getColor(R.color.com_facebook_usersettingsfragment_connected_shadow_color));
-
-            if (user != null)
-            {
+            
+            if (user != null) {
                 ImageRequest request = getImageRequest();
-                if (request != null)
-                {
+                if (request != null) {
                     URI requestUrl = request.getImageUri();
                     // Do we already have the right picture? If so, leave it alone.
-                    if (!requestUrl.equals(connectedStateLabel.getTag()))
-                    {
-                        if (user.getId().equals(userProfilePicID))
-                        {
+                    if (!requestUrl.equals(connectedStateLabel.getTag())) {
+                        if (user.getId().equals(userProfilePicID)) {
                             connectedStateLabel.setCompoundDrawables(null, userProfilePic, null, null);
                             connectedStateLabel.setTag(requestUrl);
-                        }
-                        else
-                        {
+                        } else {
                             ImageDownloader.downloadAsync(request);
                         }
                     }
                 }
                 connectedStateLabel.setText(user.getName());
-            }
-            else
-            {
+            } else {
                 connectedStateLabel.setText(getResources().getString(
                         R.string.com_facebook_usersettingsfragment_logged_in));
                 Drawable noProfilePic = getResources().getDrawable(R.drawable.com_facebook_profile_default_icon);
@@ -443,9 +399,7 @@ public class UserSettingsFragment extends FacebookFragment
                         getResources().getDimensionPixelSize(R.dimen.com_facebook_usersettingsfragment_profile_picture_height));
                 connectedStateLabel.setCompoundDrawables(null, noProfilePic, null, null);
             }
-        }
-        else
-        {
+        } else {
             int textColor = getResources().getColor(R.color.com_facebook_usersettingsfragment_not_connected_text_color);
             connectedStateLabel.setTextColor(textColor);
             connectedStateLabel.setShadowLayer(0f, 0f, 0f, textColor);
@@ -456,11 +410,9 @@ public class UserSettingsFragment extends FacebookFragment
         }
     }
 
-    private ImageRequest getImageRequest()
-    {
+    private ImageRequest getImageRequest() {
         ImageRequest request = null;
-        try
-        {
+        try {
             ImageRequest.Builder requestBuilder = new ImageRequest.Builder(
                     getActivity(),
                     ImageRequest.getProfilePictureUrl(
@@ -470,29 +422,22 @@ public class UserSettingsFragment extends FacebookFragment
 
             request = requestBuilder.setCallerTag(this)
                     .setCallback(
-                            new ImageRequest.Callback()
-                            {
+                            new ImageRequest.Callback() {
                                 @Override
-                                public void onCompleted(ImageResponse response)
-                                {
+                                public void onCompleted(ImageResponse response) {
                                     processImageResponse(user.getId(), response);
                                 }
                             })
                     .build();
-        }
-        catch (URISyntaxException e)
-        {
+        } catch (URISyntaxException e) {
         }
         return request;
     }
 
-    private void processImageResponse(String id, ImageResponse response)
-    {
-        if (response != null)
-        {
+    private void processImageResponse(String id, ImageResponse response) {
+        if (response != null) {
             Bitmap bitmap = response.getBitmap();
-            if (bitmap != null)
-            {
+            if (bitmap != null) {
                 BitmapDrawable drawable = new BitmapDrawable(UserSettingsFragment.this.getResources(), bitmap);
                 drawable.setBounds(0, 0,
                         getResources().getDimensionPixelSize(R.dimen.com_facebook_usersettingsfragment_profile_picture_width),

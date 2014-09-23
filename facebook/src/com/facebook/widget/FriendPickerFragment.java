@@ -36,8 +36,7 @@ import java.util.*;
  * Provides a Fragment that displays a list of a user's friends and allows one or more of the
  * friends to be selected.
  */
-public class FriendPickerFragment extends PickerFragment<GraphUser>
-{
+public class FriendPickerFragment extends PickerFragment<GraphUser> {
     /**
      * The key for a String parameter in the fragment's Intent bundle to indicate what user's
      * friends should be shown. The default is to display the currently authenticated user's friends.
@@ -53,31 +52,55 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
      * This value is case sensitive, and must match the enum @{link FriendPickerType}
      */
     public static final String FRIEND_PICKER_TYPE_KEY = "com.facebook.widget.FriendPickerFragment.FriendPickerType";
+
+    public enum FriendPickerType {
+        FRIENDS("/friends", true),
+        TAGGABLE_FRIENDS("/taggable_friends", false),
+        INVITABLE_FRIENDS("/invitable_friends", false);
+
+        private final String requestPath;
+        private final boolean requestIsCacheable;
+
+        FriendPickerType(String path, boolean cacheable) {
+            this.requestPath = path;
+            this.requestIsCacheable = cacheable;
+        }
+
+        String getRequestPath() {
+            return requestPath;
+        }
+
+        boolean isCacheable() {
+            return requestIsCacheable;
+        }
+    }
+
     private static final String ID = "id";
     private static final String NAME = "name";
+
     private String userId;
-    private boolean multiSelect = false;
+
+    private boolean multiSelect = true;
+
     // default to Friends for backwards compatibility
     private FriendPickerType friendPickerType = FriendPickerType.FRIENDS;
+
     private List<String> preSelectedFriendIds = new ArrayList<String>();
 
     /**
      * Default constructor. Creates a Fragment with all default properties.
      */
-    public FriendPickerFragment()
-    {
+    public FriendPickerFragment() {
         this(null);
     }
 
     /**
      * Constructor.
-     *
-     * @param args a Bundle that optionally contains one or more values containing additional
-     *             configuration information for the Fragment.
+     * @param args  a Bundle that optionally contains one or more values containing additional
+     *              configuration information for the Fragment.
      */
     @SuppressLint("ValidFragment")
-    public FriendPickerFragment(Bundle args)
-    {
+    public FriendPickerFragment(Bundle args) {
         super(GraphUser.class, R.layout.com_facebook_friendpickerfragment, args);
         setFriendPickerSettingsFromBundle(args);
     }
@@ -85,44 +108,35 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     /**
      * Gets the ID of the user whose friends should be displayed. If null, the default is to
      * show the currently authenticated user's friends.
-     *
      * @return the user ID, or null
      */
-    public String getUserId()
-    {
+    public String getUserId() {
         return userId;
     }
 
     /**
      * Sets the ID of the user whose friends should be displayed. If null, the default is to
      * show the currently authenticated user's friends.
-     *
-     * @param userId the user ID, or null
+     * @param userId     the user ID, or null
      */
-    public void setUserId(String userId)
-    {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
     /**
      * Gets whether the user can select multiple friends, or only one friend.
-     *
      * @return true if the user can select multiple friends, false if only one friend
      */
-    public boolean getMultiSelect()
-    {
+    public boolean getMultiSelect() {
         return multiSelect;
     }
 
     /**
      * Sets whether the user can select multiple friends, or only one friend.
-     *
-     * @param multiSelect true if the user can select multiple friends, false if only one friend
+     * @param multiSelect    true if the user can select multiple friends, false if only one friend
      */
-    public void setMultiSelect(boolean multiSelect)
-    {
-        if (this.multiSelect != multiSelect)
-        {
+    public void setMultiSelect(boolean multiSelect) {
+        if (this.multiSelect != multiSelect) {
             this.multiSelect = multiSelect;
             setSelectionStrategy(createSelectionStrategy());
         }
@@ -130,72 +144,58 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
 
     /**
      * Sets the friend picker type for this fragment.
-     *
      * @param type the type of friend picker to use.
      */
-    public void setFriendPickerType(FriendPickerType type)
-    {
+    public void setFriendPickerType(FriendPickerType type) {
         this.friendPickerType = type;
     }
 
     /**
      * Sets the list of friends for pre selection. These friends will be selected by default.
-     *
      * @param userIds list of friends as ids
      */
-    public void setSelectionByIds(List<String> userIds)
-    {
+    public void setSelectionByIds(List<String> userIds) {
         preSelectedFriendIds.addAll(userIds);
     }
 
     /**
      * Sets the list of friends for pre selection. These friends will be selected by default.
-     *
      * @param userIds list of friends as ids
      */
-    public void setSelectionByIds(String... userIds)
-    {
+    public void setSelectionByIds(String... userIds) {
         setSelectionByIds(Arrays.asList(userIds));
     }
 
     /**
      * Sets the list of friends for pre selection. These friends will be selected by default.
-     *
      * @param graphUsers list of friends as GraphUsers
      */
-    public void setSelection(GraphUser... graphUsers)
-    {
+    public void setSelection(GraphUser... graphUsers) {
         setSelection(Arrays.asList(graphUsers));
     }
 
     /**
-     * Gets the currently-selected list of users.
-     *
-     * @return the currently-selected list of users
-     */
-    public List<GraphUser> getSelection()
-    {
-        return getSelectedGraphObjects();
-    }
-
-    /**
      * Sets the list of friends for pre selection. These friends will be selected by default.
-     *
      * @param graphUsers list of friends as GraphUsers
      */
-    public void setSelection(List<GraphUser> graphUsers)
-    {
+    public void setSelection(List<GraphUser> graphUsers) {
         List<String> userIds = new ArrayList<String>();
-        for (GraphUser graphUser : graphUsers)
-        {
+        for(GraphUser graphUser: graphUsers) {
             userIds.add(graphUser.getId());
         }
         setSelectionByIds(userIds);
     }
 
+    /**
+     * Gets the currently-selected list of users.
+     * @return the currently-selected list of users
+     */
+    public List<GraphUser> getSelection() {
+        return getSelectedGraphObjects();
+    }
+
     @Override
-    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState)
-    {
+    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
         super.onInflate(activity, attrs, savedInstanceState);
         TypedArray a = activity.obtainStyledAttributes(attrs, R.styleable.com_facebook_friend_picker_fragment);
 
@@ -204,14 +204,12 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
         a.recycle();
     }
 
-    public void setSettingsFromBundle(Bundle inState)
-    {
+    public void setSettingsFromBundle(Bundle inState) {
         super.setSettingsFromBundle(inState);
         setFriendPickerSettingsFromBundle(inState);
     }
 
-    void saveSettingsToBundle(Bundle outState)
-    {
+    void saveSettingsToBundle(Bundle outState) {
         super.saveSettingsToBundle(outState);
 
         outState.putString(USER_ID_BUNDLE_KEY, userId);
@@ -219,26 +217,22 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     }
 
     @Override
-    PickerFragmentAdapter<GraphUser> createAdapter()
-    {
+    PickerFragmentAdapter<GraphUser> createAdapter() {
         PickerFragmentAdapter<GraphUser> adapter = new PickerFragmentAdapter<GraphUser>(
-                this.getActivity())
-        {
+                this.getActivity()) {
 
             @Override
-            protected int getGraphObjectRowLayoutId(GraphUser graphObject)
-            {
+            protected int getGraphObjectRowLayoutId(GraphUser graphObject) {
                 return R.layout.com_facebook_picker_list_row;
             }
 
             @Override
-            protected int getDefaultPicture()
-            {
+            protected int getDefaultPicture() {
                 return R.drawable.com_facebook_profile_default_icon;
             }
 
         };
-        adapter.setShowCheckbox(false);
+        adapter.setShowCheckbox(true);
         adapter.setShowPicture(getShowPictures());
         adapter.setSortFields(Arrays.asList(new String[]{NAME}));
         adapter.setGroupByField(NAME);
@@ -247,22 +241,18 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     }
 
     @Override
-    LoadingStrategy createLoadingStrategy()
-    {
+    LoadingStrategy createLoadingStrategy() {
         return new ImmediateLoadingStrategy();
     }
 
     @Override
-    SelectionStrategy createSelectionStrategy()
-    {
+    SelectionStrategy createSelectionStrategy() {
         return multiSelect ? new MultiSelectionStrategy() : new SingleSelectionStrategy();
     }
 
     @Override
-    Request getRequestForLoadData(Session session)
-    {
-        if (adapter == null)
-        {
+    Request getRequestForLoadData(Session session) {
+        if (adapter == null) {
             throw new FacebookException("Can't issue requests until Fragment has been created.");
         }
 
@@ -271,14 +261,12 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     }
 
     @Override
-    String getDefaultTitleText()
-    {
+    String getDefaultTitleText() {
         return getString(R.string.com_facebook_choose_friends);
     }
 
     @Override
-    void logAppEvents(boolean doneButtonClicked)
-    {
+    void logAppEvents(boolean doneButtonClicked) {
         AppEventsLogger logger = AppEventsLogger.newLogger(this.getActivity(), getSession());
         Bundle parameters = new Bundle();
 
@@ -294,14 +282,12 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
     }
 
     @Override
-    public void loadData(boolean forceReload)
-    {
+    public void loadData(boolean forceReload) {
         super.loadData(forceReload);
         setSelectedGraphObjects(preSelectedFriendIds);
     }
 
-    private Request createRequest(String userID, Set<String> extraFields, Session session)
-    {
+    private Request createRequest(String userID, Set<String> extraFields, Session session) {
         Request request = Request.newGraphPathRequest(session, userID + friendPickerType.getRequestPath(), null);
 
         Set<String> fields = new HashSet<String>(extraFields);
@@ -312,8 +298,7 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
         fields.addAll(Arrays.asList(requiredFields));
 
         String pictureField = adapter.getPictureFieldSpecifier();
-        if (pictureField != null)
-        {
+        if (pictureField != null) {
             fields.add(pictureField);
         }
 
@@ -324,98 +309,56 @@ public class FriendPickerFragment extends PickerFragment<GraphUser>
         return request;
     }
 
-    private void setFriendPickerSettingsFromBundle(Bundle inState)
-    {
+    private void setFriendPickerSettingsFromBundle(Bundle inState) {
         // We do this in a separate non-overridable method so it is safe to call from the constructor.
-        if (inState != null)
-        {
-            if (inState.containsKey(USER_ID_BUNDLE_KEY))
-            {
+        if (inState != null) {
+            if (inState.containsKey(USER_ID_BUNDLE_KEY)) {
                 setUserId(inState.getString(USER_ID_BUNDLE_KEY));
             }
             setMultiSelect(inState.getBoolean(MULTI_SELECT_BUNDLE_KEY, multiSelect));
-            if (inState.containsKey(FRIEND_PICKER_TYPE_KEY))
-            {
-                try
-                {
+            if (inState.containsKey(FRIEND_PICKER_TYPE_KEY)) {
+                try {
                     friendPickerType = FriendPickerType.valueOf(inState.getString(FRIEND_PICKER_TYPE_KEY));
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     // NOOP
                 }
             }
         }
     }
 
-    public enum FriendPickerType
-    {
-        FRIENDS("/friends", true),
-        TAGGABLE_FRIENDS("/taggable_friends", true),
-        INVITABLE_FRIENDS("/invitable_friends", false);
-
-        private final String requestPath;
-        private final boolean requestIsCacheable;
-
-        FriendPickerType(String path, boolean cacheable)
-        {
-            this.requestPath = path;
-            this.requestIsCacheable = cacheable;
-        }
-
-        String getRequestPath()
-        {
-            return requestPath;
-        }
-
-        boolean isCacheable()
-        {
-            return requestIsCacheable;
-        }
-    }
-
-    private class ImmediateLoadingStrategy extends LoadingStrategy
-    {
+    private class ImmediateLoadingStrategy extends LoadingStrategy {
         @Override
         protected void onLoadFinished(GraphObjectPagingLoader<GraphUser> loader,
-                                      SimpleGraphObjectCursor<GraphUser> data)
-        {
+                SimpleGraphObjectCursor<GraphUser> data) {
             super.onLoadFinished(loader, data);
 
             // We could be called in this state if we are clearing data or if we are being re-attached
             // in the middle of a query.
-            if (data == null || loader.isLoading())
-            {
+            if (data == null || loader.isLoading()) {
                 return;
             }
 
-            if (data.areMoreObjectsAvailable())
-            {
+            if (data.areMoreObjectsAvailable()) {
                 // We got results, but more are available.
                 followNextLink();
-            }
-            else
-            {
+            } else {
                 // We finished loading results.
                 hideActivityCircle();
 
                 // If this was from the cache, schedule a delayed refresh query (unless we got no results
                 // at all, in which case refresh immediately.
-                if (data.isFromCache())
-                {
+                if (data.isFromCache()) {
                     loader.refreshOriginalRequest(data.getCount() == 0 ? CACHED_RESULT_REFRESH_DELAY : 0);
                 }
             }
         }
 
         @Override
-        protected boolean canSkipRoundTripIfCached()
-        {
+        protected boolean canSkipRoundTripIfCached() {
             return friendPickerType.isCacheable();
         }
 
-        private void followNextLink()
-        {
+        private void followNextLink() {
             // This may look redundant, but this causes the circle to be alpha-dimmed if we have results.
             displayActivityCircle();
 

@@ -49,14 +49,13 @@ import com.facebook.internal.Validate;
  * methods are provided to construct commonly-used dialogs, or a caller can specify arbitrary
  * parameters to call other dialogs.
  */
-public class WebDialog extends Dialog
-{
-    public static final int DEFAULT_THEME = android.R.style.Theme_Translucent_NoTitleBar;
+public class WebDialog extends Dialog {
+    private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
+    private static final String DISPLAY_TOUCH = "touch";
     static final String REDIRECT_URI = "fbconnect://success";
     static final String CANCEL_URI = "fbconnect://cancel";
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
-    private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
-    private static final String DISPLAY_TOUCH = "touch";
+
     // width below which there are no extra margins
     private static final int NO_PADDING_SCREEN_WIDTH = 480;
     // width beyond which we're always using the MIN_SCALE_FACTOR
@@ -65,10 +64,14 @@ public class WebDialog extends Dialog
     private static final int NO_PADDING_SCREEN_HEIGHT = 800;
     // height beyond which we're always using the MIN_SCALE_FACTOR
     private static final int MAX_PADDING_SCREEN_HEIGHT = 1280;
+
     // the minimum scaling factor for the web dialog (50% of screen size)
     private static final double MIN_SCALE_FACTOR = 0.5;
     // translucent border around the webview
     private static final int BACKGROUND_GRAY = 0xCC000000;
+
+    public static final int DEFAULT_THEME = android.R.style.Theme_Translucent_NoTitleBar;
+
     private String url;
     private OnCompleteListener onCompleteListener;
     private WebView webView;
@@ -79,14 +82,28 @@ public class WebDialog extends Dialog
     private boolean isDetached = false;
 
     /**
+     * Interface that implements a listener to be called when the user's interaction with the
+     * dialog completes, whether because the dialog finished successfully, or it was cancelled,
+     * or an error was encountered.
+     */
+    public interface OnCompleteListener {
+        /**
+         * Called when the dialog completes.
+         *
+         * @param values on success, contains the values returned by the dialog
+         * @param error  on an error, contains an exception describing the error
+         */
+        void onComplete(Bundle values, FacebookException error);
+    }
+
+    /**
      * Constructor which can be used to display a dialog with an already-constructed URL.
      *
      * @param context the context to use to display the dialog
      * @param url     the URL of the Web Dialog to display; no validation is done on this URL, but it should
      *                be a valid URL pointing to a Facebook Web Dialog
      */
-    public WebDialog(Context context, String url)
-    {
+    public WebDialog(Context context, String url) {
         this(context, url, DEFAULT_THEME);
     }
 
@@ -98,8 +115,7 @@ public class WebDialog extends Dialog
      *                be a valid URL pointing to a Facebook Web Dialog
      * @param theme   identifier of a theme to pass to the Dialog class
      */
-    public WebDialog(Context context, String url, int theme)
-    {
+    public WebDialog(Context context, String url, int theme) {
         super(context, theme);
         this.url = url;
     }
@@ -111,14 +127,12 @@ public class WebDialog extends Dialog
      * @param action     the portion of the dialog URL following "dialog/"
      * @param parameters parameters which will be included as part of the URL
      * @param theme      identifier of a theme to pass to the Dialog class
-     * @param listener   the listener to notify, or null if no notification is desired
+     * @param listener the listener to notify, or null if no notification is desired
      */
-    public WebDialog(Context context, String action, Bundle parameters, int theme, OnCompleteListener listener)
-    {
+    public WebDialog(Context context, String action, Bundle parameters, int theme, OnCompleteListener listener) {
         super(context, theme);
 
-        if (parameters == null)
-        {
+        if (parameters == null) {
             parameters = new Bundle();
         }
 
@@ -136,36 +150,30 @@ public class WebDialog extends Dialog
     }
 
     /**
-     * Gets the listener which will be notified when the dialog finishes.
-     *
-     * @return the listener, or null if none has been specified
-     */
-    public OnCompleteListener getOnCompleteListener()
-    {
-        return onCompleteListener;
-    }
-
-    /**
      * Sets the listener which will be notified when the dialog finishes.
      *
      * @param listener the listener to notify, or null if no notification is desired
      */
-    public void setOnCompleteListener(OnCompleteListener listener)
-    {
+    public void setOnCompleteListener(OnCompleteListener listener) {
         onCompleteListener = listener;
     }
 
+    /**
+     * Gets the listener which will be notified when the dialog finishes.
+     *
+     * @return the listener, or null if none has been specified
+     */
+    public OnCompleteListener getOnCompleteListener() {
+        return onCompleteListener;
+    }
+
     @Override
-    public void dismiss()
-    {
-        if (webView != null)
-        {
+    public void dismiss() {
+        if (webView != null) {
             webView.stopLoading();
         }
-        if (!isDetached)
-        {
-            if (spinner.isShowing())
-            {
+        if (!isDetached) {
+            if (spinner.isShowing()) {
                 spinner.dismiss();
             }
             super.dismiss();
@@ -173,29 +181,24 @@ public class WebDialog extends Dialog
     }
 
     @Override
-    public void onDetachedFromWindow()
-    {
+    public void onDetachedFromWindow() {
         isDetached = true;
         super.onDetachedFromWindow();
     }
 
     @Override
-    public void onAttachedToWindow()
-    {
+    public void onAttachedToWindow() {
         isDetached = false;
         super.onAttachedToWindow();
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setOnCancelListener(new OnCancelListener()
-        {
+        setOnCancelListener(new OnCancelListener() {
             @Override
-            public void onCancel(DialogInterface dialogInterface)
-            {
+            public void onCancel(DialogInterface dialogInterface) {
                 sendCancelToListener();
             }
         });
@@ -203,11 +206,9 @@ public class WebDialog extends Dialog
         spinner = new ProgressDialog(getContext());
         spinner.requestWindowFeature(Window.FEATURE_NO_TITLE);
         spinner.setMessage(getContext().getString(R.string.com_facebook_loading));
-        spinner.setOnCancelListener(new OnCancelListener()
-        {
+        spinner.setOnCancelListener(new OnCancelListener() {
             @Override
-            public void onCancel(DialogInterface dialogInterface)
-            {
+            public void onCancel(DialogInterface dialogInterface) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();
             }
@@ -245,8 +246,7 @@ public class WebDialog extends Dialog
         setContentView(contentFrameLayout);
     }
 
-    private void calculateSize()
-    {
+    private void calculateSize() {
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         DisplayMetrics metrics = new DisplayMetrics();
@@ -268,27 +268,20 @@ public class WebDialog extends Dialog
 
     /**
      * Returns a scaled size (either width or height) based on the parameters passed.
-     *
-     * @param screenSize     a pixel dimension of the screen (either width or height)
-     * @param density        density of the screen
-     * @param noPaddingSize  the size at which there's no padding for the dialog
+     * @param screenSize a pixel dimension of the screen (either width or height)
+     * @param density density of the screen
+     * @param noPaddingSize the size at which there's no padding for the dialog
      * @param maxPaddingSize the size at which to apply maximum padding for the dialog
      * @return a scaled size.
      */
-    private int getScaledSize(int screenSize, float density, int noPaddingSize, int maxPaddingSize)
-    {
+    private int getScaledSize(int screenSize, float density, int noPaddingSize, int maxPaddingSize) {
         int scaledSize = (int) ((float) screenSize / density);
         double scaleFactor;
-        if (scaledSize <= noPaddingSize)
-        {
+        if (scaledSize <= noPaddingSize) {
             scaleFactor = 1.0;
-        }
-        else if (scaledSize >= maxPaddingSize)
-        {
+        } else if (scaledSize >= maxPaddingSize) {
             scaleFactor = MIN_SCALE_FACTOR;
-        }
-        else
-        {
+        } else {
             // between the noPadding and maxPadding widths, we take a linear reduction to go from 100%
             // of screen size down to MIN_SCALE_FACTOR
             scaleFactor = MIN_SCALE_FACTOR +
@@ -299,47 +292,36 @@ public class WebDialog extends Dialog
         return (int) (screenSize * scaleFactor);
     }
 
-    private void sendSuccessToListener(Bundle values)
-    {
-        if (onCompleteListener != null && !listenerCalled)
-        {
+    private void sendSuccessToListener(Bundle values) {
+        if (onCompleteListener != null && !listenerCalled) {
             listenerCalled = true;
             onCompleteListener.onComplete(values, null);
         }
     }
 
-    private void sendErrorToListener(Throwable error)
-    {
-        if (onCompleteListener != null && !listenerCalled)
-        {
+    private void sendErrorToListener(Throwable error) {
+        if (onCompleteListener != null && !listenerCalled) {
             listenerCalled = true;
             FacebookException facebookException = null;
-            if (error instanceof FacebookException)
-            {
+            if (error instanceof FacebookException) {
                 facebookException = (FacebookException) error;
-            }
-            else
-            {
+            } else {
                 facebookException = new FacebookException(error);
             }
             onCompleteListener.onComplete(null, facebookException);
         }
     }
 
-    private void sendCancelToListener()
-    {
+    private void sendCancelToListener() {
         sendErrorToListener(new FacebookOperationCanceledException());
     }
 
-    private void createCrossImage()
-    {
+    private void createCrossImage() {
         crossImageView = new ImageView(getContext());
         // Dismiss the dialog when user click on the 'x'
-        crossImageView.setOnClickListener(new View.OnClickListener()
-        {
+        crossImageView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();
             }
@@ -353,8 +335,7 @@ public class WebDialog extends Dialog
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void setUpWebView(int margin)
-    {
+    private void setUpWebView(int margin) {
         LinearLayout webViewContainer = new LinearLayout(getContext());
         webView = new WebView(getContext());
         webView.setVerticalScrollBarEnabled(false);
@@ -374,48 +355,123 @@ public class WebDialog extends Dialog
         contentFrameLayout.addView(webViewContainer);
     }
 
-    /**
-     * Interface that implements a listener to be called when the user's interaction with the
-     * dialog completes, whether because the dialog finished successfully, or it was cancelled,
-     * or an error was encountered.
-     */
-    public interface OnCompleteListener
-    {
-        /**
-         * Called when the dialog completes.
-         *
-         * @param values on success, contains the values returned by the dialog
-         * @param error  on an error, contains an exception describing the error
-         */
-        void onComplete(Bundle values, FacebookException error);
+    private class DialogWebViewClient extends WebViewClient {
+        @Override
+        @SuppressWarnings("deprecation")
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Utility.logd(LOG_TAG, "Redirect URL: " + url);
+            if (url.startsWith(WebDialog.REDIRECT_URI)) {
+                Bundle values = Util.parseUrl(url);
+
+                String error = values.getString("error");
+                if (error == null) {
+                    error = values.getString("error_type");
+                }
+
+                String errorMessage = values.getString("error_msg");
+                if (errorMessage == null) {
+                    errorMessage = values.getString("error_description");
+                }
+                String errorCodeString = values.getString("error_code");
+                int errorCode = FacebookRequestError.INVALID_ERROR_CODE;
+                if (!Utility.isNullOrEmpty(errorCodeString)) {
+                    try {
+                        errorCode = Integer.parseInt(errorCodeString);
+                    } catch (NumberFormatException ex) {
+                        errorCode = FacebookRequestError.INVALID_ERROR_CODE;
+                    }
+                }
+
+                if (Utility.isNullOrEmpty(error) && Utility
+                        .isNullOrEmpty(errorMessage) && errorCode == FacebookRequestError.INVALID_ERROR_CODE) {
+                    sendSuccessToListener(values);
+                } else if (error != null && (error.equals("access_denied") ||
+                        error.equals("OAuthAccessDeniedException"))) {
+                    sendCancelToListener();
+                } else {
+                    FacebookRequestError requestError = new FacebookRequestError(errorCode, error, errorMessage);
+                    sendErrorToListener(new FacebookServiceException(requestError, errorMessage));
+                }
+
+                WebDialog.this.dismiss();
+                return true;
+            } else if (url.startsWith(WebDialog.CANCEL_URI)) {
+                sendCancelToListener();
+                WebDialog.this.dismiss();
+                return true;
+            } else if (url.contains(DISPLAY_TOUCH)) {
+                return false;
+            }
+            // launch non-dialog URLs in a full browser
+            getContext().startActivity(
+                    new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            return true;
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode,
+                String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            sendErrorToListener(new FacebookDialogException(description, errorCode, failingUrl));
+            WebDialog.this.dismiss();
+        }
+
+        @Override
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            if (DISABLE_SSL_CHECK_FOR_TESTING) {
+                handler.proceed();
+            } else {
+                super.onReceivedSslError(view, handler, error);
+
+                sendErrorToListener(new FacebookDialogException(null, ERROR_FAILED_SSL_HANDSHAKE, null));
+                handler.cancel();
+                WebDialog.this.dismiss();
+            }
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            Utility.logd(LOG_TAG, "Webview loading URL: " + url);
+            super.onPageStarted(view, url, favicon);
+            if (!isDetached) {
+                spinner.show();
+            }
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            if (!isDetached) {
+                spinner.dismiss();
+            }
+            /*
+             * Once web view is fully loaded, set the contentFrameLayout background to be transparent
+             * and make visible the 'x' image.
+             */
+            contentFrameLayout.setBackgroundColor(Color.TRANSPARENT);
+            webView.setVisibility(View.VISIBLE);
+            crossImageView.setVisibility(View.VISIBLE);
+        }
     }
 
-    private static class BuilderBase<CONCRETE extends BuilderBase<?>>
-    {
+    private static class BuilderBase<CONCRETE extends BuilderBase<?>> {
         private Context context;
         private Session session;
         private String applicationId;
         private String action;
-        private OnCompleteListener listener;
         private int theme = DEFAULT_THEME;
+        private OnCompleteListener listener;
         private Bundle parameters;
 
-        protected BuilderBase(Context context, String action)
-        {
+        protected BuilderBase(Context context, String action) {
             Session activeSession = Session.getActiveSession();
-            if (activeSession != null && activeSession.isOpened())
-            {
+            if (activeSession != null && activeSession.isOpened()) {
                 this.session = activeSession;
-            }
-            else
-            {
+            } else {
                 String applicationId = Utility.getMetadataApplicationId(context);
-                if (applicationId != null)
-                {
+                if (applicationId != null) {
                     this.applicationId = applicationId;
-                }
-                else
-                {
+                } else {
                     throw new FacebookException("Attempted to create a builder without an open" +
                             " Active Session or a valid default Application ID.");
                 }
@@ -423,11 +479,9 @@ public class WebDialog extends Dialog
             finishInit(context, action, null);
         }
 
-        protected BuilderBase(Context context, Session session, String action, Bundle parameters)
-        {
+        protected BuilderBase(Context context, Session session, String action, Bundle parameters) {
             Validate.notNull(session, "session");
-            if (!session.isOpened())
-            {
+            if (!session.isOpened()) {
                 throw new FacebookException("Attempted to use a Session that was not open.");
             }
             this.session = session;
@@ -435,10 +489,8 @@ public class WebDialog extends Dialog
             finishInit(context, action, parameters);
         }
 
-        protected BuilderBase(Context context, String applicationId, String action, Bundle parameters)
-        {
-            if (applicationId == null)
-            {
+        protected BuilderBase(Context context, String applicationId, String action, Bundle parameters) {
+            if (applicationId == null) {
                 applicationId = Utility.getMetadataApplicationId(context);
             }
             Validate.notNullOrEmpty(applicationId, "applicationId");
@@ -448,13 +500,25 @@ public class WebDialog extends Dialog
         }
 
         /**
+         * Sets a theme identifier which will be passed to the underlying Dialog.
+         *
+         * @param theme a theme identifier which will be passed to the Dialog class
+         * @return the builder
+         */
+        public CONCRETE setTheme(int theme) {
+            this.theme = theme;
+            @SuppressWarnings("unchecked")
+            CONCRETE result = (CONCRETE) this;
+            return result;
+        }
+
+        /**
          * Sets the listener which will be notified when the dialog finishes.
          *
          * @param listener the listener to notify, or null if no notification is desired
          * @return the builder
          */
-        public CONCRETE setOnCompleteListener(OnCompleteListener listener)
-        {
+        public CONCRETE setOnCompleteListener(OnCompleteListener listener) {
             this.listener = listener;
             @SuppressWarnings("unchecked")
             CONCRETE result = (CONCRETE) this;
@@ -467,121 +531,88 @@ public class WebDialog extends Dialog
          *
          * @return the WebDialog
          */
-        public WebDialog build()
-        {
-            if (session != null && session.isOpened())
-            {
+        public WebDialog build() {
+            if (session != null && session.isOpened()) {
                 parameters.putString(ServerProtocol.DIALOG_PARAM_APP_ID, session.getApplicationId());
                 parameters.putString(ServerProtocol.DIALOG_PARAM_ACCESS_TOKEN, session.getAccessToken());
-            }
-            else
-            {
+            } else {
                 parameters.putString(ServerProtocol.DIALOG_PARAM_APP_ID, applicationId);
             }
 
             return new WebDialog(context, action, parameters, theme, listener);
         }
 
-        protected String getApplicationId()
-        {
+        protected String getApplicationId() {
             return applicationId;
         }
 
-        protected Context getContext()
-        {
+        protected Context getContext() {
             return context;
         }
 
-        protected int getTheme()
-        {
+        protected int getTheme() {
             return theme;
         }
 
-        /**
-         * Sets a theme identifier which will be passed to the underlying Dialog.
-         *
-         * @param theme a theme identifier which will be passed to the Dialog class
-         * @return the builder
-         */
-        public CONCRETE setTheme(int theme)
-        {
-            this.theme = theme;
-            @SuppressWarnings("unchecked")
-            CONCRETE result = (CONCRETE) this;
-            return result;
-        }
-
-        protected Bundle getParameters()
-        {
+        protected Bundle getParameters() {
             return parameters;
         }
 
-        protected WebDialog.OnCompleteListener getListener()
-        {
+        protected WebDialog.OnCompleteListener getListener() {
             return listener;
         }
 
-        private void finishInit(Context context, String action, Bundle parameters)
-        {
+        private void finishInit(Context context, String action, Bundle parameters) {
             this.context = context;
             this.action = action;
-            if (parameters != null)
-            {
+            if (parameters != null) {
                 this.parameters = parameters;
-            }
-            else
-            {
+            } else {
                 this.parameters = new Bundle();
             }
         }
-
-
     }
 
     /**
      * Provides a builder that allows construction of an arbitary Facebook web dialog.
      */
-    public static class Builder extends BuilderBase<Builder>
-    {
+    public static class Builder extends BuilderBase<Builder> {
         /**
          * Constructor that builds a dialog using either the active session, or the application
          * id specified in the application/meta-data.
          *
          * @param context the Context within which the dialog will be shown.
-         * @param action  the portion of the dialog URL following www.facebook.com/dialog/.
-         *                See https://developers.facebook.com/docs/reference/dialogs/ for details.
+         * @param action the portion of the dialog URL following www.facebook.com/dialog/.
+         *               See https://developers.facebook.com/docs/reference/dialogs/ for details.
          */
-        public Builder(Context context, String action)
-        {
+        public Builder(Context context, String action) {
             super(context, action);
         }
 
         /**
          * Constructor that builds a dialog for an authenticated user.
          *
-         * @param context    the Context within which the dialog will be shown.
-         * @param session    the Session representing an authenticating user to use for
-         *                   showing the dialog; must not be null, and must be opened.
-         * @param action     the portion of the dialog URL following www.facebook.com/dialog/.
-         *                   See https://developers.facebook.com/docs/reference/dialogs/ for details.
+         * @param context the Context within which the dialog will be shown.
+         * @param session the Session representing an authenticating user to use for
+         *                showing the dialog; must not be null, and must be opened.
+         * @param action the portion of the dialog URL following www.facebook.com/dialog/.
+         *               See https://developers.facebook.com/docs/reference/dialogs/ for details.
          * @param parameters a Bundle containing parameters to pass as part of the URL.
          */
-        public Builder(Context context, Session session, String action, Bundle parameters)
-        {
+        public Builder(Context context, Session session, String action, Bundle parameters) {
             super(context, session, action, parameters);
         }
 
         /**
          * Constructor that builds a dialog without an authenticated user.
          *
-         * @param context       the Context within which the dialog will be shown.
+         * @param context the Context within which the dialog will be shown.
          * @param applicationId the application ID to be included in the dialog URL.
-         * @param action        the portion of the dialog URL following www.facebook.com/dialog/.
-         *                      See https://developers.facebook.com/docs/reference/dialogs/ for details.
-         * @param parameters    a Bundle containing parameters to pass as part of the URL.
+         * @param action the portion of the dialog URL following www.facebook.com/dialog/.
+         *               See https://developers.facebook.com/docs/reference/dialogs/ for details.
+         * @param parameters a Bundle containing parameters to pass as part of the URL.
          */
-        public Builder(Context context, String applicationId, String action, Bundle parameters)
-        {
+        public Builder(Context context, String applicationId, String action, Bundle parameters) {
             super(context, applicationId, action, parameters);
         }
     }
@@ -590,8 +621,7 @@ public class WebDialog extends Dialog
      * Provides a builder that allows construction of the parameters for showing
      * the <a href="https://developers.facebook.com/docs/reference/dialogs/feed">Feed Dialog</a>.
      */
-    public static class FeedDialogBuilder extends BuilderBase<FeedDialogBuilder>
-    {
+    public static class FeedDialogBuilder extends BuilderBase<FeedDialogBuilder> {
         private static final String FEED_DIALOG = "feed";
         private static final String FROM_PARAM = "from";
         private static final String TO_PARAM = "to";
@@ -608,8 +638,7 @@ public class WebDialog extends Dialog
          *
          * @param context the Context within which the dialog will be shown.
          */
-        public FeedDialogBuilder(Context context)
-        {
+        public FeedDialogBuilder(Context context) {
             super(context, FEED_DIALOG);
         }
 
@@ -620,8 +649,7 @@ public class WebDialog extends Dialog
          * @param session the Session representing an authenticating user to use for
          *                showing the dialog; must not be null, and must be opened.
          */
-        public FeedDialogBuilder(Context context, Session session)
-        {
+        public FeedDialogBuilder(Context context, Session session) {
             super(context, session, FEED_DIALOG, null);
         }
 
@@ -637,8 +665,7 @@ public class WebDialog extends Dialog
          *                   see <a href="https://developers.facebook.com/docs/reference/dialogs/feed/">
          *                   https://developers.facebook.com/docs/reference/dialogs/feed/</a>.
          */
-        public FeedDialogBuilder(Context context, Session session, Bundle parameters)
-        {
+        public FeedDialogBuilder(Context context, Session session, Bundle parameters) {
             super(context, session, FEED_DIALOG, parameters);
         }
 
@@ -654,8 +681,7 @@ public class WebDialog extends Dialog
          *                      see <a href="https://developers.facebook.com/docs/reference/dialogs/feed/">
          *                      https://developers.facebook.com/docs/reference/dialogs/feed/</a>.
          */
-        public FeedDialogBuilder(Context context, String applicationId, Bundle parameters)
-        {
+        public FeedDialogBuilder(Context context, String applicationId, Bundle parameters) {
             super(context, applicationId, FEED_DIALOG, parameters);
         }
 
@@ -667,8 +693,7 @@ public class WebDialog extends Dialog
          * @param id Facebook ID of the profile to post from
          * @return the builder
          */
-        public FeedDialogBuilder setFrom(String id)
-        {
+        public FeedDialogBuilder setFrom(String id) {
             getParameters().putString(FROM_PARAM, id);
             return this;
         }
@@ -681,8 +706,7 @@ public class WebDialog extends Dialog
          * @param id Facebook ID of the profile to post to
          * @return the builder
          */
-        public FeedDialogBuilder setTo(String id)
-        {
+        public FeedDialogBuilder setTo(String id) {
             getParameters().putString(TO_PARAM, id);
             return this;
         }
@@ -693,8 +717,7 @@ public class WebDialog extends Dialog
          * @param link the URL
          * @return the builder
          */
-        public FeedDialogBuilder setLink(String link)
-        {
+        public FeedDialogBuilder setLink(String link) {
             getParameters().putString(LINK_PARAM, link);
             return this;
         }
@@ -705,8 +728,7 @@ public class WebDialog extends Dialog
          * @param picture the URL of the picture
          * @return the builder
          */
-        public FeedDialogBuilder setPicture(String picture)
-        {
+        public FeedDialogBuilder setPicture(String picture) {
             getParameters().putString(PICTURE_PARAM, picture);
             return this;
         }
@@ -718,8 +740,7 @@ public class WebDialog extends Dialog
          * @param source the URL of the media file
          * @return the builder
          */
-        public FeedDialogBuilder setSource(String source)
-        {
+        public FeedDialogBuilder setSource(String source) {
             getParameters().putString(SOURCE_PARAM, source);
             return this;
         }
@@ -730,8 +751,7 @@ public class WebDialog extends Dialog
          * @param name the name
          * @return the builder
          */
-        public FeedDialogBuilder setName(String name)
-        {
+        public FeedDialogBuilder setName(String name) {
             getParameters().putString(NAME_PARAM, name);
             return this;
         }
@@ -742,8 +762,7 @@ public class WebDialog extends Dialog
          * @param caption the caption
          * @return the builder
          */
-        public FeedDialogBuilder setCaption(String caption)
-        {
+        public FeedDialogBuilder setCaption(String caption) {
             getParameters().putString(CAPTION_PARAM, caption);
             return this;
         }
@@ -754,8 +773,7 @@ public class WebDialog extends Dialog
          * @param description the description
          * @return the builder
          */
-        public FeedDialogBuilder setDescription(String description)
-        {
+        public FeedDialogBuilder setDescription(String description) {
             getParameters().putString(DESCRIPTION_PARAM, description);
             return this;
         }
@@ -765,8 +783,7 @@ public class WebDialog extends Dialog
      * Provides a builder that allows construction of the parameters for showing
      * the <a href="https://developers.facebook.com/docs/reference/dialogs/requests">Requests Dialog</a>.
      */
-    public static class RequestsDialogBuilder extends BuilderBase<RequestsDialogBuilder>
-    {
+    public static class RequestsDialogBuilder extends BuilderBase<RequestsDialogBuilder> {
         private static final String APPREQUESTS_DIALOG = "apprequests";
         private static final String MESSAGE_PARAM = "message";
         private static final String TO_PARAM = "to";
@@ -779,8 +796,7 @@ public class WebDialog extends Dialog
          *
          * @param context the Context within which the dialog will be shown.
          */
-        public RequestsDialogBuilder(Context context)
-        {
+        public RequestsDialogBuilder(Context context) {
             super(context, APPREQUESTS_DIALOG);
         }
 
@@ -791,8 +807,7 @@ public class WebDialog extends Dialog
          * @param session the Session representing an authenticating user to use for
          *                showing the dialog; must not be null, and must be opened.
          */
-        public RequestsDialogBuilder(Context context, Session session)
-        {
+        public RequestsDialogBuilder(Context context, Session session) {
             super(context, session, APPREQUESTS_DIALOG, null);
         }
 
@@ -808,8 +823,7 @@ public class WebDialog extends Dialog
          *                   see <a href="https://developers.facebook.com/docs/reference/dialogs/requests/">
          *                   https://developers.facebook.com/docs/reference/dialogs/requests/</a>.
          */
-        public RequestsDialogBuilder(Context context, Session session, Bundle parameters)
-        {
+        public RequestsDialogBuilder(Context context, Session session, Bundle parameters) {
             super(context, session, APPREQUESTS_DIALOG, parameters);
         }
 
@@ -825,8 +839,7 @@ public class WebDialog extends Dialog
          *                      see <a href="https://developers.facebook.com/docs/reference/dialogs/requests/">
          *                      https://developers.facebook.com/docs/reference/dialogs/requests/</a>.
          */
-        public RequestsDialogBuilder(Context context, String applicationId, Bundle parameters)
-        {
+        public RequestsDialogBuilder(Context context, String applicationId, Bundle parameters) {
             super(context, applicationId, APPREQUESTS_DIALOG, parameters);
         }
 
@@ -837,8 +850,7 @@ public class WebDialog extends Dialog
          * @param message the message
          * @return the builder
          */
-        public RequestsDialogBuilder setMessage(String message)
-        {
+        public RequestsDialogBuilder setMessage(String message) {
             getParameters().putString(MESSAGE_PARAM, message);
             return this;
         }
@@ -851,8 +863,7 @@ public class WebDialog extends Dialog
          * @param id the id or user name to send the request to
          * @return the builder
          */
-        public RequestsDialogBuilder setTo(String id)
-        {
+        public RequestsDialogBuilder setTo(String id) {
             getParameters().putString(TO_PARAM, id);
             return this;
         }
@@ -864,8 +875,7 @@ public class WebDialog extends Dialog
          * @param data the data
          * @return the builder
          */
-        public RequestsDialogBuilder setData(String data)
-        {
+        public RequestsDialogBuilder setData(String data) {
             getParameters().putString(DATA_PARAM, data);
             return this;
         }
@@ -876,136 +886,9 @@ public class WebDialog extends Dialog
          * @param title the title
          * @return the builder
          */
-        public RequestsDialogBuilder setTitle(String title)
-        {
+        public RequestsDialogBuilder setTitle(String title) {
             getParameters().putString(TITLE_PARAM, title);
             return this;
-        }
-    }
-
-    private class DialogWebViewClient extends WebViewClient
-    {
-        @Override
-        @SuppressWarnings("deprecation")
-        public boolean shouldOverrideUrlLoading(WebView view, String url)
-        {
-            Utility.logd(LOG_TAG, "Redirect URL: " + url);
-            if (url.startsWith(WebDialog.REDIRECT_URI))
-            {
-                Bundle values = Util.parseUrl(url);
-
-                String error = values.getString("error");
-                if (error == null)
-                {
-                    error = values.getString("error_type");
-                }
-
-                String errorMessage = values.getString("error_msg");
-                if (errorMessage == null)
-                {
-                    errorMessage = values.getString("error_description");
-                }
-                String errorCodeString = values.getString("error_code");
-                int errorCode = FacebookRequestError.INVALID_ERROR_CODE;
-                if (!Utility.isNullOrEmpty(errorCodeString))
-                {
-                    try
-                    {
-                        errorCode = Integer.parseInt(errorCodeString);
-                    }
-                    catch (NumberFormatException ex)
-                    {
-                        errorCode = FacebookRequestError.INVALID_ERROR_CODE;
-                    }
-                }
-
-                if (Utility.isNullOrEmpty(error) && Utility
-                        .isNullOrEmpty(errorMessage) && errorCode == FacebookRequestError.INVALID_ERROR_CODE)
-                {
-                    sendSuccessToListener(values);
-                }
-                else if (error != null && (error.equals("access_denied") ||
-                        error.equals("OAuthAccessDeniedException")))
-                {
-                    sendCancelToListener();
-                }
-                else
-                {
-                    FacebookRequestError requestError = new FacebookRequestError(errorCode, error, errorMessage);
-                    sendErrorToListener(new FacebookServiceException(requestError, errorMessage));
-                }
-
-                WebDialog.this.dismiss();
-                return true;
-            }
-            else if (url.startsWith(WebDialog.CANCEL_URI))
-            {
-                sendCancelToListener();
-                WebDialog.this.dismiss();
-                return true;
-            }
-            else if (url.contains(DISPLAY_TOUCH))
-            {
-                return false;
-            }
-            // launch non-dialog URLs in a full browser
-            getContext().startActivity(
-                    new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-            return true;
-        }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode,
-                                    String description, String failingUrl)
-        {
-            super.onReceivedError(view, errorCode, description, failingUrl);
-            sendErrorToListener(new FacebookDialogException(description, errorCode, failingUrl));
-            WebDialog.this.dismiss();
-        }
-
-        @Override
-        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error)
-        {
-            if (DISABLE_SSL_CHECK_FOR_TESTING)
-            {
-                handler.proceed();
-            }
-            else
-            {
-                super.onReceivedSslError(view, handler, error);
-
-                sendErrorToListener(new FacebookDialogException(null, ERROR_FAILED_SSL_HANDSHAKE, null));
-                handler.cancel();
-                WebDialog.this.dismiss();
-            }
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon)
-        {
-            Utility.logd(LOG_TAG, "Webview loading URL: " + url);
-            super.onPageStarted(view, url, favicon);
-            if (!isDetached)
-            {
-                spinner.show();
-            }
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url)
-        {
-            super.onPageFinished(view, url);
-            if (!isDetached)
-            {
-                spinner.dismiss();
-            }
-            /*
-             * Once web view is fully loaded, set the contentFrameLayout background to be transparent
-             * and make visible the 'x' image.
-             */
-            contentFrameLayout.setBackgroundColor(Color.TRANSPARENT);
-            webView.setVisibility(View.VISIBLE);
-            crossImageView.setVisibility(View.VISIBLE);
         }
     }
 }

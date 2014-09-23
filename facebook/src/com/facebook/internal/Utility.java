@@ -52,10 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * any of the classes in this package is unsupported, and they may be modified or removed without warning at
  * any time.
  */
-public final class Utility
-{
-    // This is the default used by the buffer streams, but they trace a warning if you do not specify.
-    public static final int DEFAULT_STREAM_BUFFER_SIZE = 8192;
+public final class Utility {
     static final String LOG_TAG = "FacebookSDK";
     private static final String HASH_ALGORITHM_MD5 = "MD5";
     private static final String HASH_ALGORITHM_SHA1 = "SHA-1";
@@ -64,172 +61,172 @@ public final class Utility
     private static final String SUPPORTS_IMPLICIT_SDK_LOGGING = "supports_implicit_sdk_logging";
     private static final String NUX_CONTENT = "gdpv4_nux_content";
     private static final String NUX_ENABLED = "gdpv4_nux_enabled";
-    private static final String[] APP_SETTING_FIELDS = new String[]{
+    private static final String EXTRA_APP_EVENTS_INFO_FORMAT_VERSION = "a1";
+
+    private static final String [] APP_SETTING_FIELDS = new String[] {
             SUPPORTS_ATTRIBUTION,
             SUPPORTS_IMPLICIT_SDK_LOGGING,
             NUX_CONTENT,
             NUX_ENABLED
     };
-    private static final String EXTRA_APP_EVENTS_INFO_FORMAT_VERSION = "a1";
     private static final String APPLICATION_FIELDS = "fields";
+
+    // This is the default used by the buffer streams, but they trace a warning if you do not specify.
+    public static final int DEFAULT_STREAM_BUFFER_SIZE = 8192;
+
     private static Map<String, FetchedAppSettings> fetchedAppSettings =
             new ConcurrentHashMap<String, FetchedAppSettings>();
+
+  public static class FetchedAppSettings {
+        private boolean supportsAttribution;
+        private boolean supportsImplicitLogging;
+        private String nuxContent;
+        private boolean nuxEnabled;
+
+        private FetchedAppSettings(boolean supportsAttribution,
+                                   boolean supportsImplicitLogging,
+                                   String nuxContent,
+                                   boolean nuxEnabled) {
+            this.supportsAttribution = supportsAttribution;
+            this.supportsImplicitLogging = supportsImplicitLogging;
+            this.nuxContent = nuxContent;
+            this.nuxEnabled = nuxEnabled;
+        }
+
+        public boolean supportsAttribution() {
+            return supportsAttribution;
+        }
+
+        public boolean supportsImplicitLogging() {
+            return supportsImplicitLogging;
+        }
+
+        public String getNuxContent() {
+            return nuxContent;
+        }
+
+        public boolean getNuxEnabled() {
+            return nuxEnabled;
+        }
+    }
 
     // Returns true iff all items in subset are in superset, treating null and
     // empty collections as
     // the same.
-    public static <T> boolean isSubset(Collection<T> subset, Collection<T> superset)
-    {
-        if ((superset == null) || (superset.size() == 0))
-        {
+    public static <T> boolean isSubset(Collection<T> subset, Collection<T> superset) {
+        if ((superset == null) || (superset.size() == 0)) {
             return ((subset == null) || (subset.size() == 0));
         }
 
         HashSet<T> hash = new HashSet<T>(superset);
-        for (T t : subset)
-        {
-            if (!hash.contains(t))
-            {
+        for (T t : subset) {
+            if (!hash.contains(t)) {
                 return false;
             }
         }
         return true;
     }
 
-    public static <T> boolean isNullOrEmpty(Collection<T> c)
-    {
+    public static <T> boolean isNullOrEmpty(Collection<T> c) {
         return (c == null) || (c.size() == 0);
     }
 
-    public static boolean isNullOrEmpty(String s)
-    {
+    public static boolean isNullOrEmpty(String s) {
         return (s == null) || (s.length() == 0);
     }
 
-    public static <T> Collection<T> unmodifiableCollection(T... ts)
-    {
+    public static <T> Collection<T> unmodifiableCollection(T... ts) {
         return Collections.unmodifiableCollection(Arrays.asList(ts));
     }
 
-    public static <T> ArrayList<T> arrayList(T... ts)
-    {
+    public static <T> ArrayList<T> arrayList(T... ts) {
         ArrayList<T> arrayList = new ArrayList<T>(ts.length);
-        for (T t : ts)
-        {
+        for (T t : ts) {
             arrayList.add(t);
         }
         return arrayList;
     }
 
-    static String md5hash(String key)
-    {
+    static String md5hash(String key) {
         return hashWithAlgorithm(HASH_ALGORITHM_MD5, key);
     }
 
-    static String sha1hash(String key)
-    {
+    static String sha1hash(String key) {
         return hashWithAlgorithm(HASH_ALGORITHM_SHA1, key);
     }
 
-    static String sha1hash(byte[] bytes)
-    {
+    static String sha1hash(byte[] bytes) {
         return hashWithAlgorithm(HASH_ALGORITHM_SHA1, bytes);
     }
 
-    private static String hashWithAlgorithm(String algorithm, String key)
-    {
+    private static String hashWithAlgorithm(String algorithm, String key) {
         return hashWithAlgorithm(algorithm, key.getBytes());
     }
 
-    private static String hashWithAlgorithm(String algorithm, byte[] bytes)
-    {
+    private static String hashWithAlgorithm(String algorithm, byte[] bytes) {
         MessageDigest hash;
-        try
-        {
+        try {
             hash = MessageDigest.getInstance(algorithm);
-        }
-        catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             return null;
         }
         return hashBytes(hash, bytes);
     }
 
-    private static String hashBytes(MessageDigest hash, byte[] bytes)
-    {
+    private static String hashBytes(MessageDigest hash, byte[] bytes) {
         hash.update(bytes);
         byte[] digest = hash.digest();
         StringBuilder builder = new StringBuilder();
-        for (int b : digest)
-        {
+        for (int b : digest) {
             builder.append(Integer.toHexString((b >> 4) & 0xf));
             builder.append(Integer.toHexString((b >> 0) & 0xf));
         }
         return builder.toString();
     }
 
-    public static Uri buildUri(String authority, String path, Bundle parameters)
-    {
+    public static Uri buildUri(String authority, String path, Bundle parameters) {
         Uri.Builder builder = new Uri.Builder();
         builder.scheme(URL_SCHEME);
         builder.authority(authority);
         builder.path(path);
-        for (String key : parameters.keySet())
-        {
+        for (String key : parameters.keySet()) {
             Object parameter = parameters.get(key);
-            if (parameter instanceof String)
-            {
+            if (parameter instanceof String) {
                 builder.appendQueryParameter(key, (String) parameter);
             }
         }
         return builder.build();
     }
 
-    public static void putObjectInBundle(Bundle bundle, String key, Object value)
-    {
-        if (value instanceof String)
-        {
+    public static void putObjectInBundle(Bundle bundle, String key, Object value) {
+        if (value instanceof String) {
             bundle.putString(key, (String) value);
-        }
-        else if (value instanceof Parcelable)
-        {
+        } else if (value instanceof Parcelable) {
             bundle.putParcelable(key, (Parcelable) value);
-        }
-        else if (value instanceof byte[])
-        {
+        } else if (value instanceof byte[]) {
             bundle.putByteArray(key, (byte[]) value);
-        }
-        else
-        {
+        } else {
             throw new FacebookException("attempted to add unsupported type to Bundle");
         }
     }
 
-    public static void closeQuietly(Closeable closeable)
-    {
-        try
-        {
-            if (closeable != null)
-            {
+    public static void closeQuietly(Closeable closeable) {
+        try {
+            if (closeable != null) {
                 closeable.close();
             }
-        }
-        catch (IOException ioe)
-        {
+        } catch (IOException ioe) {
             // ignore
         }
     }
 
-    public static void disconnectQuietly(URLConnection connection)
-    {
-        if (connection instanceof HttpURLConnection)
-        {
-            ((HttpURLConnection) connection).disconnect();
+    public static void disconnectQuietly(URLConnection connection) {
+        if (connection instanceof HttpURLConnection) {
+            ((HttpURLConnection)connection).disconnect();
         }
     }
 
-    public static String getMetadataApplicationId(Context context)
-    {
+    public static String getMetadataApplicationId(Context context) {
         Validate.notNull(context, "context");
 
         Settings.loadDefaultsFromMetadata(context);
@@ -237,25 +234,19 @@ public final class Utility
         return Settings.getApplicationId();
     }
 
-    static Map<String, Object> convertJSONObjectToHashMap(JSONObject jsonObject)
-    {
+    static Map<String, Object> convertJSONObjectToHashMap(JSONObject jsonObject) {
         HashMap<String, Object> map = new HashMap<String, Object>();
         JSONArray keys = jsonObject.names();
-        for (int i = 0; i < keys.length(); ++i)
-        {
+        for (int i = 0; i < keys.length(); ++i) {
             String key;
-            try
-            {
+            try {
                 key = keys.getString(i);
                 Object value = jsonObject.get(key);
-                if (value instanceof JSONObject)
-                {
+                if (value instanceof JSONObject) {
                     value = convertJSONObjectToHashMap((JSONObject) value);
                 }
                 map.put(key, value);
-            }
-            catch (JSONException e)
-            {
+            } catch (JSONException e) {
             }
         }
         return map;
@@ -263,19 +254,15 @@ public final class Utility
 
     // Returns either a JSONObject or JSONArray representation of the 'key' property of 'jsonObject'.
     public static Object getStringPropertyAsJSON(JSONObject jsonObject, String key, String nonJSONPropertyKey)
-            throws JSONException
-    {
+            throws JSONException {
         Object value = jsonObject.opt(key);
-        if (value != null && value instanceof String)
-        {
+        if (value != null && value instanceof String) {
             JSONTokener tokener = new JSONTokener((String) value);
             value = tokener.nextValue();
         }
 
-        if (value != null && !(value instanceof JSONObject || value instanceof JSONArray))
-        {
-            if (nonJSONPropertyKey != null)
-            {
+        if (value != null && !(value instanceof JSONObject || value instanceof JSONArray)) {
+            if (nonJSONPropertyKey != null) {
                 // Facebook sometimes gives us back a non-JSON value such as
                 // literal "true" or "false" as a result.
                 // If we got something like that, we present it to the caller as
@@ -284,9 +271,7 @@ public final class Utility
                 jsonObject = new JSONObject();
                 jsonObject.putOpt(nonJSONPropertyKey, value);
                 return jsonObject;
-            }
-            else
-            {
+            } else {
                 throw new FacebookException("Got an unexpected non-JSON object.");
             }
         }
@@ -295,12 +280,10 @@ public final class Utility
 
     }
 
-    public static String readStreamToString(InputStream inputStream) throws IOException
-    {
+    public static String readStreamToString(InputStream inputStream) throws IOException {
         BufferedInputStream bufferedInputStream = null;
         InputStreamReader reader = null;
-        try
-        {
+        try {
             bufferedInputStream = new BufferedInputStream(inputStream);
             reader = new InputStreamReader(bufferedInputStream);
             StringBuilder stringBuilder = new StringBuilder();
@@ -308,32 +291,26 @@ public final class Utility
             final int bufferSize = 1024 * 2;
             char[] buffer = new char[bufferSize];
             int n = 0;
-            while ((n = reader.read(buffer)) != -1)
-            {
+            while ((n = reader.read(buffer)) != -1) {
                 stringBuilder.append(buffer, 0, n);
             }
 
             return stringBuilder.toString();
-        }
-        finally
-        {
+        } finally {
             closeQuietly(bufferedInputStream);
             closeQuietly(reader);
         }
     }
 
-    public static boolean stringsEqualOrEmpty(String a, String b)
-    {
+    public static boolean stringsEqualOrEmpty(String a, String b) {
         boolean aEmpty = TextUtils.isEmpty(a);
         boolean bEmpty = TextUtils.isEmpty(b);
 
-        if (aEmpty && bEmpty)
-        {
+        if (aEmpty && bEmpty) {
             // Both null or empty, they match.
             return true;
         }
-        if (!aEmpty && !bEmpty)
-        {
+        if (!aEmpty && !bEmpty) {
             // Both non-empty, check equality.
             return a.equals(b);
         }
@@ -341,8 +318,7 @@ public final class Utility
         return false;
     }
 
-    private static void clearCookiesForDomain(Context context, String domain)
-    {
+    private static void clearCookiesForDomain(Context context, String domain) {
         // This is to work around a bug where CookieManager may fail to instantiate if CookieSyncManager
         // has never been created.
         CookieSyncManager syncManager = CookieSyncManager.createInstance(context);
@@ -351,17 +327,14 @@ public final class Utility
         CookieManager cookieManager = CookieManager.getInstance();
 
         String cookies = cookieManager.getCookie(domain);
-        if (cookies == null)
-        {
+        if (cookies == null) {
             return;
         }
 
         String[] splitCookies = cookies.split(";");
-        for (String cookie : splitCookies)
-        {
+        for (String cookie : splitCookies) {
             String[] cookieParts = cookie.split("=");
-            if (cookieParts.length > 0)
-            {
+            if (cookieParts.length > 0) {
                 String newCookie = cookieParts[0].trim() + "=;expires=Sat, 1 Jan 2000 00:00:01 UTC;";
                 cookieManager.setCookie(domain, newCookie);
             }
@@ -369,8 +342,7 @@ public final class Utility
         cookieManager.removeExpiredCookie();
     }
 
-    public static void clearFacebookCookies(Context context)
-    {
+    public static void clearFacebookCookies(Context context) {
         // setCookie acts differently when trying to expire cookies between builds of Android that are using
         // Chromium HTTP stack and those that are not. Using both of these domains to ensure it works on both.
         clearCookiesForDomain(context, "facebook.com");
@@ -379,38 +351,30 @@ public final class Utility
         clearCookiesForDomain(context, "https://.facebook.com");
     }
 
-    public static void logd(String tag, Exception e)
-    {
-        if (Settings.isLoggingEnabled() && tag != null && e != null)
-        {
+    public static void logd(String tag, Exception e) {
+        if (Settings.isLoggingEnabled() && tag != null && e != null) {
             Log.d(tag, e.getClass().getSimpleName() + ": " + e.getMessage());
         }
     }
 
-    public static void logd(String tag, String msg)
-    {
-        if (Settings.isLoggingEnabled() && tag != null && msg != null)
-        {
+    public static void logd(String tag, String msg) {
+        if (Settings.isLoggingEnabled() && tag != null && msg != null) {
             Log.d(tag, msg);
         }
     }
 
-    public static <T> boolean areObjectsEqual(T a, T b)
-    {
-        if (a == null)
-        {
+    public static <T> boolean areObjectsEqual(T a, T b) {
+        if (a == null) {
             return b == null;
         }
         return a.equals(b);
     }
 
     // Note that this method makes a synchronous Graph API call, so should not be called from the main thread.
-    public static FetchedAppSettings queryAppSettings(final String applicationId, final boolean forceRequery)
-    {
+    public static FetchedAppSettings queryAppSettings(final String applicationId, final boolean forceRequery) {
 
         // Cache the last app checked results.
-        if (!forceRequery && fetchedAppSettings.containsKey(applicationId))
-        {
+        if (!forceRequery && fetchedAppSettings.containsKey(applicationId)) {
             return fetchedAppSettings.get(applicationId);
         }
 
@@ -426,70 +390,56 @@ public final class Utility
                 safeGetBooleanFromResponse(supportResponse, SUPPORTS_IMPLICIT_SDK_LOGGING),
                 safeGetStringFromResponse(supportResponse, NUX_CONTENT),
                 safeGetBooleanFromResponse(supportResponse, NUX_ENABLED)
-        );
+                );
 
         fetchedAppSettings.put(applicationId, result);
 
         return result;
     }
 
-    private static boolean safeGetBooleanFromResponse(GraphObject response, String propertyName)
-    {
+    private static boolean safeGetBooleanFromResponse(GraphObject response, String propertyName) {
         Object result = false;
-        if (response != null)
-        {
+        if (response != null) {
             result = response.getProperty(propertyName);
         }
-        if (!(result instanceof Boolean))
-        {
+        if (!(result instanceof Boolean)) {
             result = false;
         }
         return (Boolean) result;
     }
 
-    private static String safeGetStringFromResponse(GraphObject response, String propertyName)
-    {
+    private static String safeGetStringFromResponse(GraphObject response, String propertyName) {
         Object result = "";
-        if (response != null)
-        {
+        if (response != null) {
             result = response.getProperty(propertyName);
         }
-        if (!(result instanceof String))
-        {
+        if (!(result instanceof String)) {
             result = "";
         }
         return (String) result;
     }
 
-    public static void clearCaches(Context context)
-    {
+    public static void clearCaches(Context context) {
         ImageDownloader.clearCache(context);
     }
 
-    public static void deleteDirectory(File directoryOrFile)
-    {
-        if (!directoryOrFile.exists())
-        {
+    public static void deleteDirectory(File directoryOrFile) {
+        if (!directoryOrFile.exists()) {
             return;
         }
 
-        if (directoryOrFile.isDirectory())
-        {
-            for (File child : directoryOrFile.listFiles())
-            {
+        if (directoryOrFile.isDirectory()) {
+            for (File child : directoryOrFile.listFiles()) {
                 deleteDirectory(child);
             }
         }
         directoryOrFile.delete();
     }
 
-    public static <T> List<T> asListNoNulls(T... array)
-    {
+    public static <T> List<T> asListNoNulls(T... array) {
         ArrayList<T> result = new ArrayList<T>();
-        for (T t : array)
-        {
-            if (t != null)
-            {
+        for (T t : array) {
+            if (t != null) {
                 result.add(t);
             }
         }
@@ -500,167 +450,95 @@ public final class Utility
     // in order to do counting of users unknown to Facebook.  Because we put the appid into the key prior to hashing,
     // we cannot do correlation of the same user across multiple apps -- this is intentional.  When we transition to
     // the Google advertising ID, we'll get rid of this and always send that up.
-    public static String getHashedDeviceAndAppID(Context context, String applicationId)
-    {
+    public static String getHashedDeviceAndAppID(Context context, String applicationId) {
         String androidId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
 
-        if (androidId == null)
-        {
+        if (androidId == null) {
             return null;
-        }
-        else
-        {
+        } else {
             return sha1hash(androidId + applicationId);
         }
     }
 
     public static void setAppEventAttributionParameters(GraphObject params,
-                                                        AttributionIdentifiers attributionIdentifiers, String hashedDeviceAndAppId, boolean limitEventUsage)
-    {
+            AttributionIdentifiers attributionIdentifiers, String hashedDeviceAndAppId, boolean limitEventUsage) {
         // Send attributionID if it exists, otherwise send a hashed device+appid specific value as the advertiser_id.
-        if (attributionIdentifiers != null && attributionIdentifiers.getAttributionId() != null)
-        {
+        if (attributionIdentifiers != null && attributionIdentifiers.getAttributionId() != null) {
             params.setProperty("attribution", attributionIdentifiers.getAttributionId());
         }
 
-        if (attributionIdentifiers != null && attributionIdentifiers.getAndroidAdvertiserId() != null)
-        {
+        if (attributionIdentifiers != null && attributionIdentifiers.getAndroidAdvertiserId() != null) {
             params.setProperty("advertiser_id", attributionIdentifiers.getAndroidAdvertiserId());
             params.setProperty("advertiser_tracking_enabled", !attributionIdentifiers.isTrackingLimited());
-        }
-        else if (hashedDeviceAndAppId != null)
-        {
+        } else if (hashedDeviceAndAppId != null) {
             params.setProperty("advertiser_id", hashedDeviceAndAppId);
         }
 
         params.setProperty("application_tracking_enabled", !limitEventUsage);
     }
 
-    public static void setAppEventExtendedDeviceInfoParameters(GraphObject params, Context appContext)
-    {
-        JSONArray extraInfoArray = new JSONArray();
-        extraInfoArray.put(EXTRA_APP_EVENTS_INFO_FORMAT_VERSION);
+    public static void setAppEventExtendedDeviceInfoParameters(GraphObject params, Context appContext) {
+      JSONArray extraInfoArray = new JSONArray();
+      extraInfoArray.put(EXTRA_APP_EVENTS_INFO_FORMAT_VERSION);
 
-        // Application Manifest info:
-        String pkgName = appContext.getPackageName();
-        int versionCode = -1;
-        String versionName = "";
+      // Application Manifest info:
+      String pkgName = appContext.getPackageName();
+      int versionCode = -1;
+      String versionName = "";
 
-        try
-        {
-            PackageInfo pi = appContext.getPackageManager().getPackageInfo(pkgName, 0);
-            versionCode = pi.versionCode;
-            versionName = pi.versionName;
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
-            // Swallow
-        }
+      try {
+        PackageInfo pi = appContext.getPackageManager().getPackageInfo(pkgName, 0);
+        versionCode = pi.versionCode;
+        versionName = pi.versionName;
+      } catch (PackageManager.NameNotFoundException e) {
+        // Swallow
+      }
 
-        // Application Manifest info:
-        extraInfoArray.put(pkgName);
-        extraInfoArray.put(versionCode);
-        extraInfoArray.put(versionName);
+      // Application Manifest info:
+      extraInfoArray.put(pkgName);
+      extraInfoArray.put(versionCode);
+      extraInfoArray.put(versionName);
 
-        params.setProperty("extinfo", extraInfoArray.toString());
+      params.setProperty("extinfo", extraInfoArray.toString());
     }
 
-    public static Method getMethodQuietly(Class<?> clazz, String methodName, Class<?>... parameterTypes)
-    {
-        try
-        {
+    public static Method getMethodQuietly(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        try {
             return clazz.getMethod(methodName, parameterTypes);
-        }
-        catch (NoSuchMethodException ex)
-        {
+        } catch (NoSuchMethodException ex) {
             return null;
         }
     }
 
-    public static Method getMethodQuietly(String className, String methodName, Class<?>... parameterTypes)
-    {
-        try
-        {
+    public static Method getMethodQuietly(String className, String methodName, Class<?>... parameterTypes) {
+        try {
             Class<?> clazz = Class.forName(className);
             return getMethodQuietly(clazz, methodName, parameterTypes);
-        }
-        catch (ClassNotFoundException ex)
-        {
+        } catch (ClassNotFoundException ex) {
             return null;
         }
     }
 
-    public static Object invokeMethodQuietly(Object receiver, Method method, Object... args)
-    {
-        try
-        {
+    public static Object invokeMethodQuietly(Object receiver, Method method, Object... args) {
+        try {
             return method.invoke(receiver, args);
-        }
-        catch (IllegalAccessException ex)
-        {
+        } catch (IllegalAccessException ex) {
             return null;
-        }
-        catch (InvocationTargetException ex)
-        {
+        } catch (InvocationTargetException ex) {
             return null;
         }
     }
 
-    /**
-     * Returns the name of the current activity if the context is an activity, otherwise return "unknown"
-     */
-    public static String getActivityName(Context context)
-    {
-        if (context == null)
-        {
-            return "null";
-        }
-        else if (context == context.getApplicationContext())
-        {
-            return "unknown";
-        }
-        else
-        {
-            return context.getClass().getSimpleName();
-        }
+  /**
+   * Returns the name of the current activity if the context is an activity, otherwise return "unknown"
+   */
+  public static String getActivityName(Context context) {
+    if (context == null) {
+      return "null";
+    } else if (context == context.getApplicationContext()) {
+      return "unknown";
+    } else {
+      return context.getClass().getSimpleName();
     }
-
-    public static class FetchedAppSettings
-    {
-        private boolean supportsAttribution;
-        private boolean supportsImplicitLogging;
-        private String nuxContent;
-        private boolean nuxEnabled;
-
-        private FetchedAppSettings(boolean supportsAttribution,
-                                   boolean supportsImplicitLogging,
-                                   String nuxContent,
-                                   boolean nuxEnabled)
-        {
-            this.supportsAttribution = supportsAttribution;
-            this.supportsImplicitLogging = supportsImplicitLogging;
-            this.nuxContent = nuxContent;
-            this.nuxEnabled = nuxEnabled;
-        }
-
-        public boolean supportsAttribution()
-        {
-            return supportsAttribution;
-        }
-
-        public boolean supportsImplicitLogging()
-        {
-            return supportsImplicitLogging;
-        }
-
-        public String getNuxContent()
-        {
-            return nuxContent;
-        }
-
-        public boolean getNuxEnabled()
-        {
-            return nuxEnabled;
-        }
-    }
+  }
 }

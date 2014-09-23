@@ -36,7 +36,7 @@
                     android:layout="@layout/com_facebook_picker_image"
                     android:layout_gravity="left|center_vertical"
                     android:layout_width="@dimen/com_facebook_picker_place_image_size"
-                    android:layout_height="@dimen/com_facebook_picker_place_image_size"/>
+                    android:layout_height="@dimen/com_facebook_picker_place_image_size" />
         </FrameLayout>
         <LinearLayout
                 android:orientation="vertical"

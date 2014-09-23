@@ -23,21 +23,17 @@ import android.os.Bundle;
  * It is intended for use when an access token may be used on a temporary basis but should not be
  * cached for future use (for instance, when handling a deep link).
  */
-public class NonCachingTokenCachingStrategy extends TokenCachingStrategy
-{
+public class NonCachingTokenCachingStrategy extends TokenCachingStrategy {
     @Override
-    public Bundle load()
-    {
+    public Bundle load() {
         return null;
     }
 
     @Override
-    public void save(Bundle bundle)
-    {
+    public void save(Bundle bundle) {
     }
 
     @Override
-    public void clear()
-    {
+    public void clear() {
     }
 }

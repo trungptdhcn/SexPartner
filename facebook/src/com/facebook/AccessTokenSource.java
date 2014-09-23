@@ -19,8 +19,7 @@ package com.facebook;
 /**
  * Indicates where a Facebook access token was obtained from.
  */
-public enum AccessTokenSource
-{
+public enum AccessTokenSource {
     /**
      * Indicates an access token has not been obtained, or is otherwise invalid.
      */
@@ -58,13 +57,11 @@ public enum AccessTokenSource
 
     private final boolean canExtendToken;
 
-    AccessTokenSource(boolean canExtendToken)
-    {
+    AccessTokenSource(boolean canExtendToken) {
         this.canExtendToken = canExtendToken;
     }
 
-    boolean canExtendToken()
-    {
+    boolean canExtendToken() {
         return canExtendToken;
     }
 }

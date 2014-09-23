@@ -16,11 +16,11 @@
 -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:background="#FFFFFF"
-                android:descendantFocusability="beforeDescendants"
-                android:focusableInTouchMode="true">
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="#FFFFFF"
+              android:descendantFocusability="beforeDescendants"
+              android:focusableInTouchMode="true">
 
     <include layout="@layout/com_facebook_picker_title_bar_stub"/>
 

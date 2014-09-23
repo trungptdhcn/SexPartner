@@ -23,11 +23,9 @@ import android.os.Bundle;
  * any of the methods in this class is unsupported, and they may be modified or removed without warning at
  * any time.
  */
-public class LegacyHelper
-{
+public class LegacyHelper {
     @Deprecated
-    public static void extendTokenCompleted(Session session, Bundle bundle)
-    {
+    public static void extendTokenCompleted(Session session, Bundle bundle) {
         session.extendTokenCompleted(bundle);
     }
 }

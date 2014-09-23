@@ -23,8 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-class ProgressOutputStream extends FilterOutputStream implements RequestOutputStream
-{
+class ProgressOutputStream extends FilterOutputStream implements RequestOutputStream {
     private final Map<Request, RequestProgress> progressMap;
     private final RequestBatch requests;
     private final long threshold;
@@ -32,8 +31,7 @@ class ProgressOutputStream extends FilterOutputStream implements RequestOutputSt
     private long batchProgress, lastReportedProgress, maxProgress;
     private RequestProgress currentRequestProgress;
 
-    ProgressOutputStream(OutputStream out, RequestBatch requests, Map<Request, RequestProgress> progressMap, long maxProgress)
-    {
+    ProgressOutputStream(OutputStream out, RequestBatch requests, Map<Request, RequestProgress> progressMap, long maxProgress) {
         super(out);
         this.requests = requests;
         this.progressMap = progressMap;
@@ -42,44 +40,33 @@ class ProgressOutputStream extends FilterOutputStream implements RequestOutputSt
         this.threshold = Settings.getOnProgressThreshold();
     }
 
-    private void addProgress(long size)
-    {
-        if (currentRequestProgress != null)
-        {
+    private void addProgress(long size) {
+        if (currentRequestProgress != null) {
             currentRequestProgress.addProgress(size);
         }
 
         batchProgress += size;
 
-        if (batchProgress >= lastReportedProgress + threshold || batchProgress >= maxProgress)
-        {
+        if (batchProgress >= lastReportedProgress + threshold || batchProgress >= maxProgress) {
             reportBatchProgress();
         }
     }
 
-    private void reportBatchProgress()
-    {
-        if (batchProgress > lastReportedProgress)
-        {
-            for (RequestBatch.Callback callback : requests.getCallbacks())
-            {
-                if (callback instanceof RequestBatch.OnProgressCallback)
-                {
+    private void reportBatchProgress() {
+        if (batchProgress > lastReportedProgress) {
+            for (RequestBatch.Callback callback : requests.getCallbacks()) {
+                if (callback instanceof RequestBatch.OnProgressCallback) {
                     final Handler callbackHandler = requests.getCallbackHandler();
 
                     // Keep copies to avoid threading issues
                     final RequestBatch.OnProgressCallback progressCallback = (RequestBatch.OnProgressCallback) callback;
-                    if (callbackHandler == null)
-                    {
+                    if (callbackHandler == null) {
                         progressCallback.onBatchProgress(requests, batchProgress, maxProgress);
                     }
-                    else
-                    {
-                        callbackHandler.post(new Runnable()
-                        {
+                    else {
+                        callbackHandler.post(new Runnable() {
                             @Override
-                            public void run()
-                            {
+                            public void run() {
                                 progressCallback.onBatchProgress(requests, batchProgress, maxProgress);
                             }
                         });
@@ -91,49 +78,41 @@ class ProgressOutputStream extends FilterOutputStream implements RequestOutputSt
         }
     }
 
-    public void setCurrentRequest(Request request)
-    {
-        currentRequestProgress = request != null ? progressMap.get(request) : null;
+    public void setCurrentRequest(Request request) {
+        currentRequestProgress = request != null? progressMap.get(request) : null;
     }
 
-    long getBatchProgress()
-    {
+    long getBatchProgress() {
         return batchProgress;
     }
 
-    long getMaxProgress()
-    {
+    long getMaxProgress() {
         return maxProgress;
     }
 
     @Override
-    public void write(byte[] buffer) throws IOException
-    {
+    public void write(byte[] buffer) throws IOException {
         out.write(buffer);
         addProgress(buffer.length);
     }
 
     @Override
-    public void write(byte[] buffer, int offset, int length) throws IOException
-    {
+    public void write(byte[] buffer, int offset, int length) throws IOException {
         out.write(buffer, offset, length);
         addProgress(length);
     }
 
     @Override
-    public void write(int oneByte) throws IOException
-    {
+    public void write(int oneByte) throws IOException {
         out.write(oneByte);
         addProgress(1);
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         super.close();
 
-        for (RequestProgress p : progressMap.values())
-        {
+        for (RequestProgress p : progressMap.values()) {
             p.reportProgress();
         }
 

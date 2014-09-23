@@ -41,8 +41,7 @@ import com.facebook.model.GraphPlace;
 
 import java.util.*;
 
-public class PlacePickerFragment extends PickerFragment<GraphPlace>
-{
+public class PlacePickerFragment extends PickerFragment<GraphPlace> {
     /**
      * The key for an int parameter in the fragment's Intent bundle to indicate the radius in meters around
      * the center point to search. The default is 1000 meters.
@@ -73,20 +72,23 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      * The default radius around the center point to search.
      */
     public static final int DEFAULT_RADIUS_IN_METERS = 1000;
-    private int radiusInMeters = DEFAULT_RADIUS_IN_METERS;
     /**
      * The default number of results to retrieve.
      */
     public static final int DEFAULT_RESULTS_LIMIT = 100;
-    private int resultsLimit = DEFAULT_RESULTS_LIMIT;
+
     private static final int searchTextTimerDelayInMilliseconds = 2 * 1000;
+
     private static final String ID = "id";
     private static final String NAME = "name";
     private static final String LOCATION = "location";
     private static final String CATEGORY = "category";
     private static final String WERE_HERE_COUNT = "were_here_count";
     private static final String TAG = "PlacePickerFragment";
+
     private Location location;
+    private int radiusInMeters = DEFAULT_RADIUS_IN_METERS;
+    private int resultsLimit = DEFAULT_RESULTS_LIMIT;
     private String searchText;
     private Timer searchTextTimer;
     private boolean hasSearchTextChangedSinceLastQuery;
@@ -96,8 +98,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
     /**
      * Default constructor. Creates a Fragment with all default properties.
      */
-    public PlacePickerFragment()
-    {
+    public PlacePickerFragment() {
         this(null);
     }
 
@@ -107,8 +108,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      * @param args a Bundle that optionally contains one or more values containing additional
      *             configuration information for the Fragment.
      */
-    public PlacePickerFragment(Bundle args)
-    {
+    public PlacePickerFragment(Bundle args) {
         super(GraphPlace.class, R.layout.com_facebook_placepickerfragment, args);
         setPlacePickerSettingsFromBundle(args);
     }
@@ -118,8 +118,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @return the Location to search around
      */
-    public Location getLocation()
-    {
+    public Location getLocation() {
         return location;
     }
 
@@ -128,8 +127,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @param location the Location to search around
      */
-    public void setLocation(Location location)
-    {
+    public void setLocation(Location location) {
         this.location = location;
     }
 
@@ -138,8 +136,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @return the radius in meters
      */
-    public int getRadiusInMeters()
-    {
+    public int getRadiusInMeters() {
         return radiusInMeters;
     }
 
@@ -148,8 +145,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @param radiusInMeters the radius in meters
      */
-    public void setRadiusInMeters(int radiusInMeters)
-    {
+    public void setRadiusInMeters(int radiusInMeters) {
         this.radiusInMeters = radiusInMeters;
     }
 
@@ -158,8 +154,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @return the number of results to retrieve
      */
-    public int getResultsLimit()
-    {
+    public int getResultsLimit() {
         return resultsLimit;
     }
 
@@ -168,8 +163,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @param resultsLimit the number of results to retrieve
      */
-    public void setResultsLimit(int resultsLimit)
-    {
+    public void setResultsLimit(int resultsLimit) {
         this.resultsLimit = resultsLimit;
     }
 
@@ -179,8 +173,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @return the search text
      */
-    public String getSearchText()
-    {
+    public String getSearchText() {
         return searchText;
     }
 
@@ -191,15 +184,12 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @param searchText the search text
      */
-    public void setSearchText(String searchText)
-    {
-        if (TextUtils.isEmpty(searchText))
-        {
+    public void setSearchText(String searchText) {
+        if (TextUtils.isEmpty(searchText)) {
             searchText = null;
         }
         this.searchText = searchText;
-        if (this.searchBox != null)
-        {
+        if (this.searchBox != null) {
             this.searchBox.setText(searchText);
         }
     }
@@ -216,15 +206,12 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      * @param forceReloadEventIfSameText if true, will reload even if the search text has not changed; if false,
      *                                   identical search text will not force a reload
      */
-    public void onSearchBoxTextChanged(String searchText, boolean forceReloadEventIfSameText)
-    {
-        if (!forceReloadEventIfSameText && Utility.stringsEqualOrEmpty(this.searchText, searchText))
-        {
+    public void onSearchBoxTextChanged(String searchText, boolean forceReloadEventIfSameText) {
+        if (!forceReloadEventIfSameText && Utility.stringsEqualOrEmpty(this.searchText, searchText)) {
             return;
         }
 
-        if (TextUtils.isEmpty(searchText))
-        {
+        if (TextUtils.isEmpty(searchText)) {
             searchText = null;
         }
         this.searchText = searchText;
@@ -234,8 +221,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         // and send whatever changes the user has made since then. (If nothing has changed
         // in 2 seconds, we reset so the next change will cause an immediate re-query.)
         hasSearchTextChangedSinceLastQuery = true;
-        if (searchTextTimer == null)
-        {
+        if (searchTextTimer == null) {
             searchTextTimer = createSearchTextTimer();
         }
     }
@@ -245,28 +231,24 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
      *
      * @return the currently-selected place, or null if there is none
      */
-    public GraphPlace getSelection()
-    {
+    public GraphPlace getSelection() {
         Collection<GraphPlace> selection = getSelectedGraphObjects();
         return (selection != null && !selection.isEmpty()) ? selection.iterator().next() : null;
     }
 
-    public void setSettingsFromBundle(Bundle inState)
-    {
+    public void setSettingsFromBundle(Bundle inState) {
         super.setSettingsFromBundle(inState);
         setPlacePickerSettingsFromBundle(inState);
     }
 
     @Override
-    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState)
-    {
+    public void onInflate(Activity activity, AttributeSet attrs, Bundle savedInstanceState) {
         super.onInflate(activity, attrs, savedInstanceState);
         TypedArray a = activity.obtainStyledAttributes(attrs, R.styleable.com_facebook_place_picker_fragment);
 
         setRadiusInMeters(a.getInt(R.styleable.com_facebook_place_picker_fragment_radius_in_meters, radiusInMeters));
         setResultsLimit(a.getInt(R.styleable.com_facebook_place_picker_fragment_results_limit, resultsLimit));
-        if (a.hasValue(R.styleable.com_facebook_place_picker_fragment_results_limit))
-        {
+        if (a.hasValue(R.styleable.com_facebook_place_picker_fragment_results_limit)) {
             setSearchText(a.getString(R.styleable.com_facebook_place_picker_fragment_search_text));
         }
         showSearchBox = a.getBoolean(R.styleable.com_facebook_place_picker_fragment_show_search_box, showSearchBox);
@@ -275,10 +257,8 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
     }
 
     @Override
-    void setupViews(ViewGroup view)
-    {
-        if (showSearchBox)
-        {
+    void setupViews(ViewGroup view) {
+        if (showSearchBox) {
             ListView listView = (ListView) view.findViewById(R.id.com_facebook_picker_list_view);
 
             View searchHeaderView = getActivity().getLayoutInflater().inflate(
@@ -289,39 +269,33 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
             searchBox = (EditText) view.findViewById(R.id.com_facebook_picker_search_text);
 
             searchBox.addTextChangedListener(new SearchTextWatcher());
-            if (!TextUtils.isEmpty(searchText))
-            {
+            if (!TextUtils.isEmpty(searchText)) {
                 searchBox.setText(searchText);
             }
         }
     }
 
     @Override
-    public void onAttach(Activity activity)
-    {
+    public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        if (searchBox != null)
-        {
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (searchBox != null) {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(searchBox, InputMethodManager.SHOW_IMPLICIT);
         }
     }
 
     @Override
-    public void onDetach()
-    {
+    public void onDetach() {
         super.onDetach();
 
-        if (searchBox != null)
-        {
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (searchBox != null) {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
         }
     }
 
-    void saveSettingsToBundle(Bundle outState)
-    {
+    void saveSettingsToBundle(Bundle outState) {
         super.saveSettingsToBundle(outState);
 
         outState.putInt(RADIUS_IN_METERS_BUNDLE_KEY, radiusInMeters);
@@ -332,26 +306,22 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
     }
 
     @Override
-    void onLoadingData()
-    {
+    void onLoadingData() {
         hasSearchTextChangedSinceLastQuery = false;
     }
 
     @Override
-    Request getRequestForLoadData(Session session)
-    {
+    Request getRequestForLoadData(Session session) {
         return createRequest(location, radiusInMeters, resultsLimit, searchText, extraFields, session);
     }
 
     @Override
-    String getDefaultTitleText()
-    {
+    String getDefaultTitleText() {
         return getString(R.string.com_facebook_nearby);
     }
 
     @Override
-    void logAppEvents(boolean doneButtonClicked)
-    {
+    void logAppEvents(boolean doneButtonClicked) {
         AppEventsLogger logger = AppEventsLogger.newLogger(this.getActivity(), getSession());
         Bundle parameters = new Bundle();
 
@@ -367,42 +337,32 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
     }
 
     @Override
-    PickerFragmentAdapter<GraphPlace> createAdapter()
-    {
+    PickerFragmentAdapter<GraphPlace> createAdapter() {
         PickerFragmentAdapter<GraphPlace> adapter = new PickerFragmentAdapter<GraphPlace>(
-                this.getActivity())
-        {
+                this.getActivity()) {
             @Override
-            protected CharSequence getSubTitleOfGraphObject(GraphPlace graphObject)
-            {
+            protected CharSequence getSubTitleOfGraphObject(GraphPlace graphObject) {
                 String category = graphObject.getCategory();
                 Integer wereHereCount = (Integer) graphObject.getProperty(WERE_HERE_COUNT);
 
                 String result = null;
-                if (category != null && wereHereCount != null)
-                {
+                if (category != null && wereHereCount != null) {
                     result = getString(R.string.com_facebook_placepicker_subtitle_format, category, wereHereCount);
-                }
-                else if (category == null && wereHereCount != null)
-                {
+                } else if (category == null && wereHereCount != null) {
                     result = getString(R.string.com_facebook_placepicker_subtitle_were_here_only_format, wereHereCount);
-                }
-                else if (category != null && wereHereCount == null)
-                {
+                } else if (category != null && wereHereCount == null) {
                     result = getString(R.string.com_facebook_placepicker_subtitle_catetory_only_format, category);
                 }
                 return result;
             }
 
             @Override
-            protected int getGraphObjectRowLayoutId(GraphPlace graphObject)
-            {
+            protected int getGraphObjectRowLayoutId(GraphPlace graphObject) {
                 return R.layout.com_facebook_placepickerfragment_list_row;
             }
 
             @Override
-            protected int getDefaultPicture()
-            {
+            protected int getDefaultPicture() {
                 return R.drawable.com_facebook_place_default_icon;
             }
 
@@ -413,21 +373,18 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
     }
 
     @Override
-    LoadingStrategy createLoadingStrategy()
-    {
+    LoadingStrategy createLoadingStrategy() {
         return new AsNeededLoadingStrategy();
     }
 
     @Override
-    SelectionStrategy createSelectionStrategy()
-    {
+    SelectionStrategy createSelectionStrategy() {
         return new SingleSelectionStrategy();
     }
 
     private Request createRequest(Location location, int radiusInMeters, int resultsLimit, String searchText,
-                                  Set<String> extraFields,
-                                  Session session)
-    {
+            Set<String> extraFields,
+            Session session) {
         Request request = Request.newPlacesSearchRequest(session, location, radiusInMeters, resultsLimit, searchText,
                 null);
 
@@ -442,8 +399,7 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         fields.addAll(Arrays.asList(requiredFields));
 
         String pictureField = adapter.getPictureFieldSpecifier();
-        if (pictureField != null)
-        {
+        if (pictureField != null) {
             fields.add(pictureField);
         }
 
@@ -454,19 +410,15 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         return request;
     }
 
-    private void setPlacePickerSettingsFromBundle(Bundle inState)
-    {
+    private void setPlacePickerSettingsFromBundle(Bundle inState) {
         // We do this in a separate non-overridable method so it is safe to call from the constructor.
-        if (inState != null)
-        {
+        if (inState != null) {
             setRadiusInMeters(inState.getInt(RADIUS_IN_METERS_BUNDLE_KEY, radiusInMeters));
             setResultsLimit(inState.getInt(RESULTS_LIMIT_BUNDLE_KEY, resultsLimit));
-            if (inState.containsKey(SEARCH_TEXT_BUNDLE_KEY))
-            {
+            if (inState.containsKey(SEARCH_TEXT_BUNDLE_KEY)) {
                 setSearchText(inState.getString(SEARCH_TEXT_BUNDLE_KEY));
             }
-            if (inState.containsKey(LOCATION_BUNDLE_KEY))
-            {
+            if (inState.containsKey(LOCATION_BUNDLE_KEY)) {
                 Location location = inState.getParcelable(LOCATION_BUNDLE_KEY);
                 setLocation(location);
             }
@@ -474,14 +426,11 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         }
     }
 
-    private Timer createSearchTextTimer()
-    {
+    private Timer createSearchTextTimer() {
         Timer timer = new Timer();
-        timer.schedule(new TimerTask()
-        {
+        timer.schedule(new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 onSearchTextTimerTriggered();
             }
         }, 0, searchTextTimerDelayInMilliseconds);
@@ -489,49 +438,32 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         return timer;
     }
 
-    private void onSearchTextTimerTriggered()
-    {
-        if (hasSearchTextChangedSinceLastQuery)
-        {
+    private void onSearchTextTimerTriggered() {
+        if (hasSearchTextChangedSinceLastQuery) {
             Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable()
-            {
+            handler.post(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     FacebookException error = null;
-                    try
-                    {
+                    try {
                         loadData(true);
-                    }
-                    catch (FacebookException fe)
-                    {
+                    } catch (FacebookException fe) {
                         error = fe;
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         error = new FacebookException(e);
-                    }
-                    finally
-                    {
-                        if (error != null)
-                        {
+                    } finally {
+                        if (error != null) {
                             OnErrorListener onErrorListener = getOnErrorListener();
-                            if (onErrorListener != null)
-                            {
+                            if (onErrorListener != null) {
                                 onErrorListener.onError(PlacePickerFragment.this, error);
-                            }
-                            else
-                            {
+                            } else {
                                 Logger.log(LoggingBehavior.REQUESTS, TAG, "Error loading data : %s", error);
                             }
                         }
                     }
                 }
             });
-        }
-        else
-        {
+        } else {
             // Nothing has changed in 2 seconds. Invalidate and forget about this timer.
             // Next time the user types, we will fire a query immediately again.
             searchTextTimer.cancel();
@@ -539,22 +471,17 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         }
     }
 
-    private class AsNeededLoadingStrategy extends LoadingStrategy
-    {
+    private class AsNeededLoadingStrategy extends LoadingStrategy {
         @Override
-        public void attach(GraphObjectAdapter<GraphPlace> adapter)
-        {
+        public void attach(GraphObjectAdapter<GraphPlace> adapter) {
             super.attach(adapter);
 
-            this.adapter.setDataNeededListener(new GraphObjectAdapter.DataNeededListener()
-            {
+            this.adapter.setDataNeededListener(new GraphObjectAdapter.DataNeededListener() {
                 @Override
-                public void onDataNeeded()
-                {
+                public void onDataNeeded() {
                     // Do nothing if we are currently loading data . We will get notified again when that load finishes if the adapter still
                     // needs more data. Otherwise, follow the next link.
-                    if (!loader.isLoading())
-                    {
+                    if (!loader.isLoading()) {
                         loader.followNextLink();
                     }
                 }
@@ -563,21 +490,18 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
 
         @Override
         protected void onLoadFinished(GraphObjectPagingLoader<GraphPlace> loader,
-                                      SimpleGraphObjectCursor<GraphPlace> data)
-        {
+                SimpleGraphObjectCursor<GraphPlace> data) {
             super.onLoadFinished(loader, data);
 
             // We could be called in this state if we are clearing data or if we are being re-attached
             // in the middle of a query.
-            if (data == null || loader.isLoading())
-            {
+            if (data == null || loader.isLoading()) {
                 return;
             }
 
             hideActivityCircle();
 
-            if (data.isFromCache())
-            {
+            if (data.isFromCache()) {
                 // Only the first page can be cached, since all subsequent pages will be round-tripped. Force
                 // a refresh of the first page before we allow paging to begin. If the first page produced
                 // no data, launch the refresh immediately, otherwise schedule it for later.
@@ -586,23 +510,19 @@ public class PlacePickerFragment extends PickerFragment<GraphPlace>
         }
     }
 
-    private class SearchTextWatcher implements TextWatcher
-    {
+    private class SearchTextWatcher implements TextWatcher {
 
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after)
-        {
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
 
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count)
-        {
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
             onSearchBoxTextChanged(s.toString(), false);
         }
 
         @Override
-        public void afterTextChanged(Editable s)
-        {
+        public void afterTextChanged(Editable s) {
         }
     }
 }

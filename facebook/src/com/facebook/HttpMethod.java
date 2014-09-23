@@ -19,8 +19,7 @@ package com.facebook;
 /**
  * Enumeration of HTTP methods supported by Request
  */
-public enum HttpMethod
-{
+public enum HttpMethod {
     /**
      * Use HTTP method "GET" for the request
      */

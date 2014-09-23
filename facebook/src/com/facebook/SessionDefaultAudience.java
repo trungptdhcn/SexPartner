@@ -24,8 +24,7 @@ import com.facebook.internal.NativeProtocol;
  * publication ceiling for the application. This enumerated value allows the application to select which
  * audience to ask the user to grant publish permission for.
  */
-public enum SessionDefaultAudience
-{
+public enum SessionDefaultAudience {
     /**
      * Represents an invalid default audience value, can be used when only reading.
      */
@@ -48,13 +47,11 @@ public enum SessionDefaultAudience
 
     private final String nativeProtocolAudience;
 
-    private SessionDefaultAudience(String protocol)
-    {
+    private SessionDefaultAudience(String protocol) {
         nativeProtocolAudience = protocol;
     }
 
-    public String getNativeProtocolAudience()
-    {
+    public String getNativeProtocolAudience() {
         return nativeProtocolAudience;
     }
 }

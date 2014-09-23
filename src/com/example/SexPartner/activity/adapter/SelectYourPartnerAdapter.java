@@ -57,7 +57,7 @@ public class SelectYourPartnerAdapter extends BaseAdapter
             viewHolder.tvName = (TextView) convertView.findViewById(R.id.select_partner_item_tvName);
             viewHolder.ivAvatar = (CircularImageView) convertView.findViewById(R.id.select_partner_item_ivAvatar);
             viewHolder.ivAvatar.setBorderColor(context.getResources().getColor(R.color.gray));
-            viewHolder.ivAvatar.setBorderWidth(4);
+            viewHolder.ivAvatar.setBorderWidth(2);
             viewHolder.ivAvatar.addShadow();
             convertView.setTag(viewHolder);
         }

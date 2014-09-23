@@ -18,39 +18,33 @@ package com.facebook.internal;
 
 import android.graphics.Bitmap;
 
-public class ImageResponse
-{
+public class ImageResponse {
 
     private ImageRequest request;
     private Exception error;
     private boolean isCachedRedirect;
     private Bitmap bitmap;
 
-    ImageResponse(ImageRequest request, Exception error, boolean isCachedRedirect, Bitmap bitmap)
-    {
+    ImageResponse(ImageRequest request, Exception error, boolean isCachedRedirect, Bitmap bitmap) {
         this.request = request;
         this.error = error;
         this.bitmap = bitmap;
         this.isCachedRedirect = isCachedRedirect;
     }
 
-    public ImageRequest getRequest()
-    {
+    public ImageRequest getRequest() {
         return request;
     }
 
-    public Exception getError()
-    {
+    public Exception getError() {
         return error;
     }
 
-    public Bitmap getBitmap()
-    {
+    public Bitmap getBitmap() {
         return bitmap;
     }
 
-    public boolean isCachedRedirect()
-    {
+    public boolean isCachedRedirect() {
         return isCachedRedirect;
     }
 }

@@ -18,8 +18,7 @@ package com.facebook.widget;
 
 import com.facebook.model.GraphObject;
 
-interface GraphObjectCursor<T extends GraphObject>
-{
+interface GraphObjectCursor<T extends GraphObject> {
     boolean isFromCache();
 
     boolean areMoreObjectsAvailable();

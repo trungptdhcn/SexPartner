@@ -34,9 +34,7 @@
         <activity android:name=".activity.Round1Activity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.UserGuideActivity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.ChatPageActivity" android:theme="@android:style/Theme.NoTitleBar"/>
-        AnsweringTimeActivity
         <activity android:name=".activity.AnsweringTimeActivity" android:theme="@android:style/Theme.NoTitleBar"/>
-        SelectYourPartnerActivity
         <activity android:name=".activity.SelectYourPartnerActivity" android:theme="@android:style/Theme.NoTitleBar"/>
     </application>
 </manifest>

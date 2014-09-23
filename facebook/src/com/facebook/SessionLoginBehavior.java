@@ -23,8 +23,7 @@ package com.facebook;
  * {@link Session#requestNewReadPermissions(com.facebook.Session.NewPermissionsRequest) requestNewReadPermissions}, or
  * {@link Session#requestNewPublishPermissions(com.facebook.Session.NewPermissionsRequest) requestNewPublishPermissions}.
  */
-public enum SessionLoginBehavior
-{
+public enum SessionLoginBehavior {
     /**
      * Specifies that Session should attempt Single Sign On (SSO), and if that
      * does not work fall back to dialog auth. This is the default behavior.
@@ -45,19 +44,16 @@ public enum SessionLoginBehavior
     private final boolean allowsKatanaAuth;
     private final boolean allowsWebViewAuth;
 
-    private SessionLoginBehavior(boolean allowsKatanaAuth, boolean allowsWebViewAuth)
-    {
+    private SessionLoginBehavior(boolean allowsKatanaAuth, boolean allowsWebViewAuth) {
         this.allowsKatanaAuth = allowsKatanaAuth;
         this.allowsWebViewAuth = allowsWebViewAuth;
     }
 
-    boolean allowsKatanaAuth()
-    {
+    boolean allowsKatanaAuth() {
         return allowsKatanaAuth;
     }
 
-    boolean allowsWebViewAuth()
-    {
+    boolean allowsWebViewAuth() {
         return allowsWebViewAuth;
     }
 }

@@ -22,8 +22,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-class ProgressNoopOutputStream extends OutputStream implements RequestOutputStream
-{
+class ProgressNoopOutputStream extends OutputStream implements RequestOutputStream {
     private final Map<Request, RequestProgress> progressMap = new HashMap<Request, RequestProgress>();
     private final Handler callbackHandler;
 
@@ -31,31 +30,25 @@ class ProgressNoopOutputStream extends OutputStream implements RequestOutputStre
     private RequestProgress currentRequestProgress;
     private int batchMax;
 
-    ProgressNoopOutputStream(Handler callbackHandler)
-    {
+    ProgressNoopOutputStream(Handler callbackHandler) {
         this.callbackHandler = callbackHandler;
     }
 
-    public void setCurrentRequest(Request currentRequest)
-    {
+    public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
-        this.currentRequestProgress = currentRequest != null ? progressMap.get(currentRequest) : null;
+        this.currentRequestProgress = currentRequest != null? progressMap.get(currentRequest) : null;
     }
 
-    int getMaxProgress()
-    {
+    int getMaxProgress() {
         return batchMax;
     }
 
-    Map<Request, RequestProgress> getProgressMap()
-    {
+    Map<Request,RequestProgress> getProgressMap() {
         return progressMap;
     }
 
-    void addProgress(long size)
-    {
-        if (currentRequestProgress == null)
-        {
+    void addProgress(long size) {
+        if (currentRequestProgress == null) {
             currentRequestProgress = new RequestProgress(callbackHandler, currentRequest);
             progressMap.put(currentRequest, currentRequestProgress);
         }
@@ -65,20 +58,17 @@ class ProgressNoopOutputStream extends OutputStream implements RequestOutputStre
     }
 
     @Override
-    public void write(byte[] buffer)
-    {
+    public void write(byte[] buffer) {
         addProgress(buffer.length);
     }
 
     @Override
-    public void write(byte[] buffer, int offset, int length)
-    {
+    public void write(byte[] buffer, int offset, int length) {
         addProgress(length);
     }
 
     @Override
-    public void write(int oneByte)
-    {
+    public void write(int oneByte) {
         addProgress(1);
     }
 }

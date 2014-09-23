@@ -28,16 +28,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-class ImageResponseCache
-{
+class ImageResponseCache {
     static final String TAG = ImageResponseCache.class.getSimpleName();
 
     private volatile static FileLruCache imageCache;
 
-    synchronized static FileLruCache getCache(Context context) throws IOException
-    {
-        if (imageCache == null)
-        {
+    synchronized static FileLruCache getCache(Context context) throws IOException{
+        if (imageCache == null) {
             imageCache = new FileLruCache(context.getApplicationContext(), TAG, new FileLruCache.Limits());
         }
         return imageCache;
@@ -45,20 +42,14 @@ class ImageResponseCache
 
     // Get stream from cache, or return null if the image is not cached.
     // Does not throw if there was an error.
-    static InputStream getCachedImageStream(URI url, Context context)
-    {
+    static InputStream getCachedImageStream(URI url, Context context) {
         InputStream imageStream = null;
-        if (url != null)
-        {
-            if (isCDNURL(url))
-            {
-                try
-                {
+        if (url != null) {
+            if (isCDNURL(url)) {
+                try {
                     FileLruCache cache = getCache(context);
                     imageStream = cache.get(url.toString());
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     Logger.log(LoggingBehavior.CACHE, Log.WARN, TAG, e.toString());
                 }
             }
@@ -67,17 +58,13 @@ class ImageResponseCache
         return imageStream;
     }
 
-    static InputStream interceptAndCacheImageStream(Context context, HttpURLConnection connection) throws IOException
-    {
+    static InputStream interceptAndCacheImageStream(Context context, HttpURLConnection connection) throws IOException {
         InputStream stream = null;
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-        {
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             URL url = connection.getURL();
             stream = connection.getInputStream(); // Default stream in case caching fails
-            try
-            {
-                if (isCDNURL(url.toURI()))
-                {
+            try {
+                if (isCDNURL(url.toURI())) {
                     FileLruCache cache = getCache(context);
 
                     // Wrap stream with a caching stream
@@ -85,32 +72,24 @@ class ImageResponseCache
                             url.toString(),
                             new BufferedHttpInputStream(stream, connection));
                 }
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 // Caching is best effort
-            }
-            catch (URISyntaxException e)
-            {
-                // Caching is best effort
+            } catch (URISyntaxException e) {
+            // Caching is best effort
             }
         }
         return stream;
     }
 
-    private static boolean isCDNURL(URI url)
-    {
-        if (url != null)
-        {
+   private static boolean isCDNURL(URI url) {
+        if (url != null) {
             String uriHost = url.getHost();
 
-            if (uriHost.endsWith("fbcdn.net"))
-            {
+            if (uriHost.endsWith("fbcdn.net")) {
                 return true;
             }
 
-            if (uriHost.startsWith("fbcdn") && uriHost.endsWith("akamaihd.net"))
-            {
+            if (uriHost.startsWith("fbcdn") && uriHost.endsWith("akamaihd.net")) {
                 return true;
             }
         }
@@ -118,31 +97,23 @@ class ImageResponseCache
         return false;
     }
 
-    static void clearCache(Context context)
-    {
-        try
-        {
+    static void clearCache(Context context) {
+        try {
             getCache(context).clearCache();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Logger.log(LoggingBehavior.CACHE, Log.WARN, TAG, "clearCache failed " + e.getMessage());
         }
     }
 
-    private static class BufferedHttpInputStream extends BufferedInputStream
-    {
+    private static class BufferedHttpInputStream extends BufferedInputStream {
         HttpURLConnection connection;
-
-        BufferedHttpInputStream(InputStream stream, HttpURLConnection connection)
-        {
+        BufferedHttpInputStream(InputStream stream, HttpURLConnection connection) {
             super(stream, Utility.DEFAULT_STREAM_BUFFER_SIZE);
             this.connection = connection;
         }
 
         @Override
-        public void close() throws IOException
-        {
+        public void close() throws IOException {
             super.close();
             Utility.disconnectQuietly(connection);
         }

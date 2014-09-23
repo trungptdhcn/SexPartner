@@ -32,8 +32,7 @@ package com.facebook.android;
  *
  * @devDocDeprecated
  */
-public class FacebookError extends RuntimeException
-{
+public class FacebookError extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
@@ -41,28 +40,24 @@ public class FacebookError extends RuntimeException
     private String mErrorType;
 
     @Deprecated
-    public FacebookError(String message)
-    {
+    public FacebookError(String message) {
         super(message);
     }
 
     @Deprecated
-    public FacebookError(String message, String type, int code)
-    {
+    public FacebookError(String message, String type, int code) {
         super(message);
         mErrorType = type;
         mErrorCode = code;
     }
 
     @Deprecated
-    public int getErrorCode()
-    {
+    public int getErrorCode() {
         return mErrorCode;
     }
 
     @Deprecated
-    public String getErrorType()
-    {
+    public String getErrorType() {
         return mErrorType;
     }
 

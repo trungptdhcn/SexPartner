@@ -14,16 +14,9 @@
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="viewpagerIndicator" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/viewpagerIndicator/libs/android-support-v4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module" module-name="CircularImageView" />
+    <orderEntry type="library" name="libs" level="project" />
+    <orderEntry type="module" module-name="facebook1" />
   </component>
 </module>
 

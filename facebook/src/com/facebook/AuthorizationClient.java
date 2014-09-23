@@ -42,8 +42,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class AuthorizationClient implements Serializable
-{
+class AuthorizationClient implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final String TAG = "Facebook-AuthorizationClient";
+    private static final String WEB_VIEW_AUTH_HANDLER_STORE =
+            "com.facebook.AuthorizationClient.WebViewAuthHandler.TOKEN_STORE_KEY";
+    private static final String WEB_VIEW_AUTH_HANDLER_TOKEN_KEY = "TOKEN";
+
+    // Constants for logging login-related data. Some of these are only used by Session, but grouped here for
+    // maintainability.
+    private static final String EVENT_NAME_LOGIN_METHOD_START = "fb_mobile_login_method_start";
+    private static final String EVENT_NAME_LOGIN_METHOD_COMPLETE = "fb_mobile_login_method_complete";
+    private static final String EVENT_PARAM_METHOD_RESULT_SKIPPED = "skipped";
     static final String EVENT_NAME_LOGIN_START = "fb_mobile_login_start";
     static final String EVENT_NAME_LOGIN_COMPLETE = "fb_mobile_login_complete";
     // Note: to ensure stability of column mappings across the four different event types, we prepend a column
@@ -65,16 +75,7 @@ class AuthorizationClient implements Serializable
     static final String EVENT_EXTRAS_MISSING_INTERNET_PERMISSION = "no_internet_permission";
     static final String EVENT_EXTRAS_NOT_TRIED = "not_tried";
     static final String EVENT_EXTRAS_NEW_PERMISSIONS = "new_permissions";
-    private static final long serialVersionUID = 1L;
-    private static final String TAG = "Facebook-AuthorizationClient";
-    private static final String WEB_VIEW_AUTH_HANDLER_STORE =
-            "com.facebook.AuthorizationClient.WebViewAuthHandler.TOKEN_STORE_KEY";
-    private static final String WEB_VIEW_AUTH_HANDLER_TOKEN_KEY = "TOKEN";
-    // Constants for logging login-related data. Some of these are only used by Session, but grouped here for
-    // maintainability.
-    private static final String EVENT_NAME_LOGIN_METHOD_START = "fb_mobile_login_method_start";
-    private static final String EVENT_NAME_LOGIN_METHOD_COMPLETE = "fb_mobile_login_method_complete";
-    private static final String EVENT_PARAM_METHOD_RESULT_SKIPPED = "skipped";
+
     List<AuthHandler> handlersToTry;
     AuthHandler currentHandler;
     transient Context context;
@@ -86,88 +87,64 @@ class AuthorizationClient implements Serializable
     Map<String, String> loggingExtras;
     private transient AppEventsLogger appEventsLogger;
 
-    static Bundle newAuthorizationLoggingBundle(String authLoggerId)
-    {
-        // We want to log all parameters for all events, to ensure stability of columns across different event types.
-        Bundle bundle = new Bundle();
-        bundle.putLong(EVENT_PARAM_TIMESTAMP, System.currentTimeMillis());
-        bundle.putString(EVENT_PARAM_AUTH_LOGGER_ID, authLoggerId);
-        bundle.putString(EVENT_PARAM_METHOD, "");
-        bundle.putString(EVENT_PARAM_LOGIN_RESULT, "");
-        bundle.putString(EVENT_PARAM_ERROR_MESSAGE, "");
-        bundle.putString(EVENT_PARAM_ERROR_CODE, "");
-        bundle.putString(EVENT_PARAM_EXTRAS, "");
-        return bundle;
+    interface OnCompletedListener {
+        void onCompleted(Result result);
     }
 
-    private static String getE2E()
-    {
-        JSONObject e2e = new JSONObject();
-        try
-        {
-            e2e.put("init", System.currentTimeMillis());
-        }
-        catch (JSONException e)
-        {
-        }
-        return e2e.toString();
+    interface BackgroundProcessingListener {
+        void onBackgroundProcessingStarted();
+
+        void onBackgroundProcessingStopped();
     }
 
-    void setContext(final Context context)
-    {
+    interface StartActivityDelegate {
+        public void startActivityForResult(Intent intent, int requestCode);
+
+        public Activity getActivityContext();
+    }
+
+    void setContext(final Context context) {
         this.context = context;
         // We rely on individual requests to tell us how to start an activity.
         startActivityDelegate = null;
     }
 
-    void setContext(final Activity activity)
-    {
+    void setContext(final Activity activity) {
         this.context = activity;
 
         // If we are used in the context of an activity, we will always use that activity to
         // call startActivityForResult.
-        startActivityDelegate = new StartActivityDelegate()
-        {
+        startActivityDelegate = new StartActivityDelegate() {
             @Override
-            public void startActivityForResult(Intent intent, int requestCode)
-            {
+            public void startActivityForResult(Intent intent, int requestCode) {
                 activity.startActivityForResult(intent, requestCode);
             }
 
             @Override
-            public Activity getActivityContext()
-            {
+            public Activity getActivityContext() {
                 return activity;
             }
         };
     }
 
-    void startOrContinueAuth(AuthorizationRequest request)
-    {
-        if (getInProgress())
-        {
+    void startOrContinueAuth(AuthorizationRequest request) {
+        if (getInProgress()) {
             continueAuth();
-        }
-        else
-        {
+        } else {
             authorize(request);
         }
     }
 
-    void authorize(AuthorizationRequest request)
-    {
-        if (request == null)
-        {
+    void authorize(AuthorizationRequest request) {
+        if (request == null) {
             return;
         }
 
-        if (pendingRequest != null)
-        {
+        if (pendingRequest != null) {
             throw new FacebookException("Attempted to authorize while a request is pending.");
         }
 
-        if (request.needsNewTokenValidation() && !checkInternetPermission())
-        {
+        if (request.needsNewTokenValidation() && !checkInternetPermission()) {
             // We're going to need INTERNET permission later and don't have it, so fail early.
             return;
         }
@@ -176,74 +153,59 @@ class AuthorizationClient implements Serializable
         tryNextHandler();
     }
 
-    void continueAuth()
-    {
-        if (pendingRequest == null || currentHandler == null)
-        {
+    void continueAuth() {
+        if (pendingRequest == null || currentHandler == null) {
             throw new FacebookException("Attempted to continue authorization without a pending request.");
         }
 
-        if (currentHandler.needsRestart())
-        {
+        if (currentHandler.needsRestart()) {
             currentHandler.cancel();
             tryCurrentHandler();
         }
     }
 
-    boolean getInProgress()
-    {
+    boolean getInProgress() {
         return pendingRequest != null && currentHandler != null;
     }
 
-    void cancelCurrentHandler()
-    {
-        if (currentHandler != null)
-        {
+    void cancelCurrentHandler() {
+        if (currentHandler != null) {
             currentHandler.cancel();
         }
     }
 
-    boolean onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == pendingRequest.getRequestCode())
-        {
+    boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == pendingRequest.getRequestCode()) {
             return currentHandler.onActivityResult(requestCode, resultCode, data);
         }
         return false;
     }
 
-    private List<AuthHandler> getHandlerTypes(AuthorizationRequest request)
-    {
+    private List<AuthHandler> getHandlerTypes(AuthorizationRequest request) {
         ArrayList<AuthHandler> handlers = new ArrayList<AuthHandler>();
 
         final SessionLoginBehavior behavior = request.getLoginBehavior();
-        if (behavior.allowsKatanaAuth())
-        {
-            if (!request.isLegacy())
-            {
+        if (behavior.allowsKatanaAuth()) {
+            if (!request.isLegacy()) {
                 handlers.add(new GetTokenAuthHandler());
             }
             handlers.add(new KatanaProxyAuthHandler());
         }
 
-        if (behavior.allowsWebViewAuth())
-        {
+        if (behavior.allowsWebViewAuth()) {
             handlers.add(new WebViewAuthHandler());
         }
 
         return handlers;
     }
 
-    boolean checkInternetPermission()
-    {
-        if (checkedInternetPermission)
-        {
+    boolean checkInternetPermission() {
+        if (checkedInternetPermission) {
             return true;
         }
 
         int permissionCheck = checkPermission(Manifest.permission.INTERNET);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
             String errorType = context.getString(R.string.com_facebook_internet_permission_error_title);
             String errorDescription = context.getString(R.string.com_facebook_internet_permission_error_message);
             complete(Result.createErrorResult(pendingRequest, errorType, errorDescription));
@@ -255,67 +217,53 @@ class AuthorizationClient implements Serializable
         return true;
     }
 
-    void tryNextHandler()
-    {
-        if (currentHandler != null)
-        {
+    void tryNextHandler() {
+        if (currentHandler != null) {
             logAuthorizationMethodComplete(currentHandler.getNameForLogging(), EVENT_PARAM_METHOD_RESULT_SKIPPED,
                     null, null, currentHandler.methodLoggingExtras);
         }
 
-        while (handlersToTry != null && !handlersToTry.isEmpty())
-        {
+        while (handlersToTry != null && !handlersToTry.isEmpty()) {
             currentHandler = handlersToTry.remove(0);
 
             boolean started = tryCurrentHandler();
 
-            if (started)
-            {
+            if (started) {
                 return;
             }
         }
 
-        if (pendingRequest != null)
-        {
+        if (pendingRequest != null) {
             // We went through all handlers without successfully attempting an auth.
             completeWithFailure();
         }
     }
 
-    private void completeWithFailure()
-    {
+    private void completeWithFailure() {
         complete(Result.createErrorResult(pendingRequest, "Login attempt failed.", null));
     }
 
-    private void addLoggingExtra(String key, String value, boolean accumulate)
-    {
-        if (loggingExtras == null)
-        {
+    private void addLoggingExtra(String key, String value, boolean accumulate) {
+        if (loggingExtras == null) {
             loggingExtras = new HashMap<String, String>();
         }
-        if (loggingExtras.containsKey(key) && accumulate)
-        {
+        if (loggingExtras.containsKey(key) && accumulate) {
             value = loggingExtras.get(key) + "," + value;
         }
         loggingExtras.put(key, value);
     }
 
-    boolean tryCurrentHandler()
-    {
-        if (currentHandler.needsInternetPermission() && !checkInternetPermission())
-        {
+    boolean tryCurrentHandler() {
+        if (currentHandler.needsInternetPermission() && !checkInternetPermission()) {
             addLoggingExtra(EVENT_EXTRAS_MISSING_INTERNET_PERMISSION, AppEventsConstants.EVENT_PARAM_VALUE_YES,
                     false);
             return false;
         }
 
         boolean tried = currentHandler.tryAuthorize(pendingRequest);
-        if (tried)
-        {
+        if (tried) {
             logAuthorizationMethodStart(currentHandler.getNameForLogging());
-        }
-        else
-        {
+        } else {
             // We didn't try it, so we don't get any other completion notification -- log that we skipped it.
             addLoggingExtra(EVENT_EXTRAS_NOT_TRIED, currentHandler.getNameForLogging(), true);
         }
@@ -323,32 +271,25 @@ class AuthorizationClient implements Serializable
         return tried;
     }
 
-    void completeAndValidate(Result outcome)
-    {
+    void completeAndValidate(Result outcome) {
         // Do we need to validate a successful result (as in the case of a reauth)?
-        if (outcome.token != null && pendingRequest.needsNewTokenValidation())
-        {
+        if (outcome.token != null && pendingRequest.needsNewTokenValidation()) {
             validateSameFbidAndFinish(outcome);
-        }
-        else
-        {
+        } else {
             // We're done, just notify the listener.
             complete(outcome);
         }
     }
 
-    void complete(Result outcome)
-    {
+    void complete(Result outcome) {
         // This might be null if, for some reason, none of the handlers were successfully tried (in which case
         // we already logged that).
-        if (currentHandler != null)
-        {
+        if (currentHandler != null) {
             logAuthorizationMethodComplete(currentHandler.getNameForLogging(), outcome,
                     currentHandler.methodLoggingExtras);
         }
 
-        if (loggingExtras != null)
-        {
+        if (loggingExtras != null) {
             // Pass this back to the caller for logging at the aggregate level.
             outcome.loggingExtras = loggingExtras;
         }
@@ -361,46 +302,35 @@ class AuthorizationClient implements Serializable
         notifyOnCompleteListener(outcome);
     }
 
-    OnCompletedListener getOnCompletedListener()
-    {
+    OnCompletedListener getOnCompletedListener() {
         return onCompletedListener;
     }
 
-    void setOnCompletedListener(OnCompletedListener onCompletedListener)
-    {
+    void setOnCompletedListener(OnCompletedListener onCompletedListener) {
         this.onCompletedListener = onCompletedListener;
     }
 
-    BackgroundProcessingListener getBackgroundProcessingListener()
-    {
+    BackgroundProcessingListener getBackgroundProcessingListener() {
         return backgroundProcessingListener;
     }
 
-    void setBackgroundProcessingListener(BackgroundProcessingListener backgroundProcessingListener)
-    {
+    void setBackgroundProcessingListener(BackgroundProcessingListener backgroundProcessingListener) {
         this.backgroundProcessingListener = backgroundProcessingListener;
     }
 
-    StartActivityDelegate getStartActivityDelegate()
-    {
-        if (startActivityDelegate != null)
-        {
+    StartActivityDelegate getStartActivityDelegate() {
+        if (startActivityDelegate != null) {
             return startActivityDelegate;
-        }
-        else if (pendingRequest != null)
-        {
+        } else if (pendingRequest != null) {
             // Wrap the request's delegate in our own.
-            return new StartActivityDelegate()
-            {
+            return new StartActivityDelegate() {
                 @Override
-                public void startActivityForResult(Intent intent, int requestCode)
-                {
+                public void startActivityForResult(Intent intent, int requestCode) {
                     pendingRequest.getStartActivityDelegate().startActivityForResult(intent, requestCode);
                 }
 
                 @Override
-                public Activity getActivityContext()
-                {
+                public Activity getActivityContext() {
                     return pendingRequest.getStartActivityDelegate().getActivityContext();
                 }
             };
@@ -408,15 +338,12 @@ class AuthorizationClient implements Serializable
         return null;
     }
 
-    int checkPermission(String permission)
-    {
+    int checkPermission(String permission) {
         return context.checkCallingOrSelfPermission(permission);
     }
 
-    void validateSameFbidAndFinish(Result pendingResult)
-    {
-        if (pendingResult.token == null)
-        {
+    void validateSameFbidAndFinish(Result pendingResult) {
+        if (pendingResult.token == null) {
             throw new FacebookException("Can't validate without a token");
         }
 
@@ -427,8 +354,7 @@ class AuthorizationClient implements Serializable
         batch.executeAsync();
     }
 
-    RequestBatch createReauthValidationBatch(final Result pendingResult)
-    {
+    RequestBatch createReauthValidationBatch(final Result pendingResult) {
         // We need to ensure that the token we got represents the same fbid as the old one. We issue
         // a "me" request using the current token, a "me" request using the new token, and a "me/permissions"
         // request using the current token to get the permissions of the user.
@@ -438,21 +364,15 @@ class AuthorizationClient implements Serializable
         final ArrayList<String> declinedPermissions = new ArrayList<String>();
         final String newToken = pendingResult.token.getToken();
 
-        Request.Callback meCallback = new Request.Callback()
-        {
+        Request.Callback meCallback = new Request.Callback() {
             @Override
-            public void onCompleted(Response response)
-            {
-                try
-                {
+            public void onCompleted(Response response) {
+                try {
                     GraphUser user = response.getGraphObjectAs(GraphUser.class);
-                    if (user != null)
-                    {
+                    if (user != null) {
                         fbids.add(user.getId());
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                 }
             }
         };
@@ -465,22 +385,16 @@ class AuthorizationClient implements Serializable
         requestNewTokenMe.setCallback(meCallback);
 
         Request requestCurrentTokenPermissions = createGetPermissionsRequest(validateSameFbidAsToken);
-        requestCurrentTokenPermissions.setCallback(new Request.Callback()
-        {
+        requestCurrentTokenPermissions.setCallback(new Request.Callback() {
             @Override
-            public void onCompleted(Response response)
-            {
-                try
-                {
+            public void onCompleted(Response response) {
+                try {
                     Session.PermissionsPair permissionsPair = Session.handlePermissionResponse(response);
-                    if (permissionsPair != null)
-                    {
+                    if (permissionsPair != null) {
                         grantedPermissions.addAll(permissionsPair.getGrantedPermissions());
                         declinedPermissions.addAll(permissionsPair.getDeclinedPermissions());
                     }
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                 }
             }
         });
@@ -488,36 +402,26 @@ class AuthorizationClient implements Serializable
         RequestBatch batch = new RequestBatch(requestCurrentTokenMe, requestNewTokenMe,
                 requestCurrentTokenPermissions);
         batch.setBatchApplicationId(pendingRequest.getApplicationId());
-        batch.addCallback(new RequestBatch.Callback()
-        {
+        batch.addCallback(new RequestBatch.Callback() {
             @Override
-            public void onBatchCompleted(RequestBatch batch)
-            {
-                try
-                {
+            public void onBatchCompleted(RequestBatch batch) {
+                try {
                     Result result = null;
                     if (fbids.size() == 2 && fbids.get(0) != null && fbids.get(1) != null &&
-                            fbids.get(0).equals(fbids.get(1)))
-                    {
+                            fbids.get(0).equals(fbids.get(1))) {
                         // Modify the token to have the right permission set.
                         AccessToken tokenWithPermissions = AccessToken
                                 .createFromTokenWithRefreshedPermissions(pendingResult.token,
                                         grantedPermissions, declinedPermissions);
                         result = Result.createTokenResult(pendingRequest, tokenWithPermissions);
-                    }
-                    else
-                    {
+                    } else {
                         result = Result
                                 .createErrorResult(pendingRequest, "User logged in as different Facebook user.", null);
                     }
                     complete(result);
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     complete(Result.createErrorResult(pendingRequest, "Caught exception", ex.getMessage()));
-                }
-                finally
-                {
+                } finally {
                     notifyBackgroundProcessingStop();
                 }
             }
@@ -526,56 +430,45 @@ class AuthorizationClient implements Serializable
         return batch;
     }
 
-    Request createGetPermissionsRequest(String accessToken)
-    {
+    Request createGetPermissionsRequest(String accessToken) {
         Bundle parameters = new Bundle();
         parameters.putString("access_token", accessToken);
         return new Request(null, "me/permissions", parameters, HttpMethod.GET, null);
     }
 
-    Request createGetProfileIdRequest(String accessToken)
-    {
+    Request createGetProfileIdRequest(String accessToken) {
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id");
         parameters.putString("access_token", accessToken);
         return new Request(null, "me", parameters, HttpMethod.GET, null);
     }
 
-    private AppEventsLogger getAppEventsLogger()
-    {
-        if (appEventsLogger == null || !appEventsLogger.getApplicationId().equals(pendingRequest.getApplicationId()))
-        {
+    private AppEventsLogger getAppEventsLogger() {
+        if (appEventsLogger == null || !appEventsLogger.getApplicationId().equals(pendingRequest.getApplicationId())) {
             appEventsLogger = AppEventsLogger.newLogger(context, pendingRequest.getApplicationId());
         }
         return appEventsLogger;
     }
 
-    private void notifyOnCompleteListener(Result outcome)
-    {
-        if (onCompletedListener != null)
-        {
+    private void notifyOnCompleteListener(Result outcome) {
+        if (onCompletedListener != null) {
             onCompletedListener.onCompleted(outcome);
         }
     }
 
-    private void notifyBackgroundProcessingStart()
-    {
-        if (backgroundProcessingListener != null)
-        {
+    private void notifyBackgroundProcessingStart() {
+        if (backgroundProcessingListener != null) {
             backgroundProcessingListener.onBackgroundProcessingStarted();
         }
     }
 
-    private void notifyBackgroundProcessingStop()
-    {
-        if (backgroundProcessingListener != null)
-        {
+    private void notifyBackgroundProcessingStop() {
+        if (backgroundProcessingListener != null) {
             backgroundProcessingListener.onBackgroundProcessingStopped();
         }
     }
 
-    private void logAuthorizationMethodStart(String method)
-    {
+    private void logAuthorizationMethodStart(String method) {
         Bundle bundle = newAuthorizationLoggingBundle(pendingRequest.getAuthId());
         bundle.putLong(EVENT_PARAM_TIMESTAMP, System.currentTimeMillis());
         bundle.putString(EVENT_PARAM_METHOD, method);
@@ -583,41 +476,32 @@ class AuthorizationClient implements Serializable
         getAppEventsLogger().logSdkEvent(EVENT_NAME_LOGIN_METHOD_START, null, bundle);
     }
 
-    private void logAuthorizationMethodComplete(String method, Result result, Map<String, String> loggingExtras)
-    {
+    private void logAuthorizationMethodComplete(String method, Result result, Map<String, String> loggingExtras) {
         logAuthorizationMethodComplete(method, result.code.getLoggingValue(), result.errorMessage, result.errorCode,
                 loggingExtras);
     }
 
     private void logAuthorizationMethodComplete(String method, String result, String errorMessage, String errorCode,
-                                                Map<String, String> loggingExtras)
-    {
+            Map<String, String> loggingExtras) {
         Bundle bundle = null;
-        if (pendingRequest == null)
-        {
+        if (pendingRequest == null) {
             // We don't expect this to happen, but if it does, log an event for diagnostic purposes.
             bundle = newAuthorizationLoggingBundle("");
             bundle.putString(EVENT_PARAM_LOGIN_RESULT, Result.Code.ERROR.getLoggingValue());
             bundle.putString(EVENT_PARAM_ERROR_MESSAGE,
                     "Unexpected call to logAuthorizationMethodComplete with null pendingRequest.");
-        }
-        else
-        {
+        } else {
             bundle = newAuthorizationLoggingBundle(pendingRequest.getAuthId());
-            if (result != null)
-            {
+            if (result != null) {
                 bundle.putString(EVENT_PARAM_LOGIN_RESULT, result);
             }
-            if (errorMessage != null)
-            {
+            if (errorMessage != null) {
                 bundle.putString(EVENT_PARAM_ERROR_MESSAGE, errorMessage);
             }
-            if (errorCode != null)
-            {
+            if (errorCode != null) {
                 bundle.putString(EVENT_PARAM_ERROR_CODE, errorCode);
             }
-            if (loggingExtras != null && !loggingExtras.isEmpty())
-            {
+            if (loggingExtras != null && !loggingExtras.isEmpty()) {
                 JSONObject jsonObject = new JSONObject(loggingExtras);
                 bundle.putString(EVENT_PARAM_EXTRAS, jsonObject.toString());
             }
@@ -628,328 +512,86 @@ class AuthorizationClient implements Serializable
         getAppEventsLogger().logSdkEvent(EVENT_NAME_LOGIN_METHOD_COMPLETE, null, bundle);
     }
 
-    private void logWebLoginCompleted(String applicationId, String e2e)
-    {
-        AppEventsLogger appEventsLogger = AppEventsLogger.newLogger(context, applicationId);
-
-        Bundle parameters = new Bundle();
-        parameters.putString(AnalyticsEvents.PARAMETER_WEB_LOGIN_E2E, e2e);
-        parameters.putLong(AnalyticsEvents.PARAMETER_WEB_LOGIN_SWITCHBACK_TIME, System.currentTimeMillis());
-        parameters.putString(AnalyticsEvents.PARAMETER_APP_ID, applicationId);
-
-        appEventsLogger.logSdkEvent(AnalyticsEvents.EVENT_WEB_LOGIN_COMPLETE, null, parameters);
+    static Bundle newAuthorizationLoggingBundle(String authLoggerId) {
+        // We want to log all parameters for all events, to ensure stability of columns across different event types.
+        Bundle bundle = new Bundle();
+        bundle.putLong(EVENT_PARAM_TIMESTAMP, System.currentTimeMillis());
+        bundle.putString(EVENT_PARAM_AUTH_LOGGER_ID, authLoggerId);
+        bundle.putString(EVENT_PARAM_METHOD, "");
+        bundle.putString(EVENT_PARAM_LOGIN_RESULT, "");
+        bundle.putString(EVENT_PARAM_ERROR_MESSAGE, "");
+        bundle.putString(EVENT_PARAM_ERROR_CODE, "");
+        bundle.putString(EVENT_PARAM_EXTRAS, "");
+        return bundle;
     }
 
-    interface OnCompletedListener
-    {
-        void onCompleted(Result result);
-    }
-
-    interface BackgroundProcessingListener
-    {
-        void onBackgroundProcessingStarted();
-
-        void onBackgroundProcessingStopped();
-    }
-
-    interface StartActivityDelegate
-    {
-        public void startActivityForResult(Intent intent, int requestCode);
-
-        public Activity getActivityContext();
-    }
-
-    static class AuthDialogBuilder extends WebDialog.Builder
-    {
-        static final String REDIRECT_URI = "fbconnect://success";
-        private static final String OAUTH_DIALOG = "oauth";
-        private String e2e;
-        private boolean isRerequest;
-
-        public AuthDialogBuilder(Context context, String applicationId, Bundle parameters)
-        {
-            super(context, applicationId, OAUTH_DIALOG, parameters);
-        }
-
-        public AuthDialogBuilder setE2E(String e2e)
-        {
-            this.e2e = e2e;
-            return this;
-        }
-
-        public AuthDialogBuilder setIsRerequest(boolean isRerequest)
-        {
-            this.isRerequest = isRerequest;
-            return this;
-        }
-
-        @Override
-        public WebDialog build()
-        {
-            Bundle parameters = getParameters();
-            parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
-            parameters.putString(ServerProtocol.DIALOG_PARAM_CLIENT_ID, getApplicationId());
-            parameters.putString(ServerProtocol.DIALOG_PARAM_E2E, e2e);
-            parameters.putString(ServerProtocol.DIALOG_PARAM_RESPONSE_TYPE, ServerProtocol.DIALOG_RESPONSE_TYPE_TOKEN);
-            parameters.putString(ServerProtocol.DIALOG_PARAM_RETURN_SCOPES, ServerProtocol.DIALOG_RETURN_SCOPES_TRUE);
-
-            // Only set the rerequest auth type for non legacy requests
-            if (isRerequest && !Settings.getPlatformCompatibilityEnabled())
-            {
-                parameters.putString(ServerProtocol.DIALOG_PARAM_AUTH_TYPE, ServerProtocol.DIALOG_REREQUEST_AUTH_TYPE);
-            }
-
-            return new WebDialog(getContext(), OAUTH_DIALOG, parameters, getTheme(), getListener());
-        }
-    }
-
-    static class AuthorizationRequest implements Serializable
-    {
-        private static final long serialVersionUID = 1L;
-
-        private transient final StartActivityDelegate startActivityDelegate;
-        private final SessionLoginBehavior loginBehavior;
-        private final int requestCode;
-        private final SessionDefaultAudience defaultAudience;
-        private final String applicationId;
-        private final String previousAccessToken;
-        private final String authId;
-        private boolean isLegacy = false;
-        private List<String> permissions;
-        private boolean isRerequest = false;
-
-        AuthorizationRequest(SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
-                             List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,
-                             String validateSameFbidAsToken, StartActivityDelegate startActivityDelegate, String authId)
-        {
-            this.loginBehavior = loginBehavior;
-            this.requestCode = requestCode;
-            this.isLegacy = isLegacy;
-            this.permissions = permissions;
-            this.defaultAudience = defaultAudience;
-            this.applicationId = applicationId;
-            this.previousAccessToken = validateSameFbidAsToken;
-            this.startActivityDelegate = startActivityDelegate;
-            this.authId = authId;
-        }
-
-        StartActivityDelegate getStartActivityDelegate()
-        {
-            return startActivityDelegate;
-        }
-
-        List<String> getPermissions()
-        {
-            return permissions;
-        }
-
-        void setPermissions(List<String> permissions)
-        {
-            this.permissions = permissions;
-        }
-
-        SessionLoginBehavior getLoginBehavior()
-        {
-            return loginBehavior;
-        }
-
-        int getRequestCode()
-        {
-            return requestCode;
-        }
-
-        SessionDefaultAudience getDefaultAudience()
-        {
-            return defaultAudience;
-        }
-
-        String getApplicationId()
-        {
-            return applicationId;
-        }
-
-        boolean isLegacy()
-        {
-            return isLegacy;
-        }
-
-        void setIsLegacy(boolean isLegacy)
-        {
-            this.isLegacy = isLegacy;
-        }
-
-        String getPreviousAccessToken()
-        {
-            return previousAccessToken;
-        }
-
-        boolean needsNewTokenValidation()
-        {
-            return previousAccessToken != null && !isLegacy;
-        }
-
-        String getAuthId()
-        {
-            return authId;
-        }
-
-        boolean isRerequest()
-        {
-            return isRerequest;
-        }
-
-        void setRerequest(boolean isRerequest)
-        {
-            this.isRerequest = isRerequest;
-        }
-    }
-
-    static class Result implements Serializable
-    {
-        private static final long serialVersionUID = 1L;
-        final Code code;
-        final AccessToken token;
-        final String errorMessage;
-        final String errorCode;
-        final AuthorizationRequest request;
-        Map<String, String> loggingExtras;
-
-        private Result(AuthorizationRequest request, Code code, AccessToken token, String errorMessage,
-                       String errorCode)
-        {
-            this.request = request;
-            this.token = token;
-            this.errorMessage = errorMessage;
-            this.code = code;
-            this.errorCode = errorCode;
-        }
-
-        static Result createTokenResult(AuthorizationRequest request, AccessToken token)
-        {
-            return new Result(request, Code.SUCCESS, token, null, null);
-        }
-
-        static Result createCancelResult(AuthorizationRequest request, String message)
-        {
-            return new Result(request, Code.CANCEL, null, message, null);
-        }
-
-        static Result createErrorResult(AuthorizationRequest request, String errorType, String errorDescription)
-        {
-            return createErrorResult(request, errorType, errorDescription, null);
-        }
-
-        static Result createErrorResult(AuthorizationRequest request, String errorType, String errorDescription,
-                                        String errorCode)
-        {
-            String message = TextUtils.join(": ", Utility.asListNoNulls(errorType, errorDescription));
-            return new Result(request, Code.ERROR, null, message, errorCode);
-        }
-
-        enum Code
-        {
-            SUCCESS("success"),
-            CANCEL("cancel"),
-            ERROR("error");
-
-            private final String loggingValue;
-
-            Code(String loggingValue)
-            {
-                this.loggingValue = loggingValue;
-            }
-
-            // For consistency across platforms, we want to use specific string values when logging these results.
-            String getLoggingValue()
-            {
-                return loggingValue;
-            }
-        }
-    }
-
-    abstract class AuthHandler implements Serializable
-    {
+    abstract class AuthHandler implements Serializable {
         private static final long serialVersionUID = 1L;
 
         Map<String, String> methodLoggingExtras;
 
         abstract boolean tryAuthorize(AuthorizationRequest request);
-
         abstract String getNameForLogging();
 
-        boolean onActivityResult(int requestCode, int resultCode, Intent data)
-        {
+        boolean onActivityResult(int requestCode, int resultCode, Intent data) {
             return false;
         }
 
-        boolean needsRestart()
-        {
+        boolean needsRestart() {
             return false;
         }
 
-        boolean needsInternetPermission()
-        {
+        boolean needsInternetPermission() {
             return false;
         }
 
-        void cancel()
-        {
+        void cancel() {
         }
 
-        protected void addLoggingExtra(String key, Object value)
-        {
-            if (methodLoggingExtras == null)
-            {
+        protected void addLoggingExtra(String key, Object value) {
+            if (methodLoggingExtras == null) {
                 methodLoggingExtras = new HashMap<String, String>();
             }
             methodLoggingExtras.put(key, value == null ? null : value.toString());
         }
     }
 
-    class WebViewAuthHandler extends AuthHandler
-    {
+    class WebViewAuthHandler extends AuthHandler {
         private static final long serialVersionUID = 1L;
         private transient WebDialog loginDialog;
         private String applicationId;
         private String e2e;
 
         @Override
-        String getNameForLogging()
-        {
+        String getNameForLogging() {
             return "web_view";
         }
 
         @Override
-        boolean needsRestart()
-        {
+        boolean needsRestart() {
             // Because we are presenting WebView UI within the current context, we need to explicitly
             // restart the process if the context goes away and is recreated.
             return true;
         }
 
         @Override
-        boolean needsInternetPermission()
-        {
+        boolean needsInternetPermission() {
             return true;
         }
 
         @Override
-        void cancel()
-        {
-            if (loginDialog != null)
-            {
+        void cancel() {
+            if (loginDialog != null) {
                 loginDialog.dismiss();
                 loginDialog = null;
             }
         }
 
         @Override
-        boolean tryAuthorize(final AuthorizationRequest request)
-        {
+        boolean tryAuthorize(final AuthorizationRequest request) {
             applicationId = request.getApplicationId();
             Bundle parameters = new Bundle();
-            if (!Utility.isNullOrEmpty(request.getPermissions()))
-            {
+            if (!Utility.isNullOrEmpty(request.getPermissions())) {
                 String scope = TextUtils.join(",", request.getPermissions());
                 parameters.putString(ServerProtocol.DIALOG_PARAM_SCOPE, scope);
                 addLoggingExtra(ServerProtocol.DIALOG_PARAM_SCOPE, scope);
@@ -959,24 +601,19 @@ class AuthorizationClient implements Serializable
             parameters.putString(ServerProtocol.DIALOG_PARAM_DEFAULT_AUDIENCE, audience.getNativeProtocolAudience());
 
             String previousToken = request.getPreviousAccessToken();
-            if (!Utility.isNullOrEmpty(previousToken) && (previousToken.equals(loadCookieToken())))
-            {
+            if (!Utility.isNullOrEmpty(previousToken) && (previousToken.equals(loadCookieToken()))) {
                 parameters.putString(ServerProtocol.DIALOG_PARAM_ACCESS_TOKEN, previousToken);
                 // Don't log the actual access token, just its presence or absence.
                 addLoggingExtra(ServerProtocol.DIALOG_PARAM_ACCESS_TOKEN, AppEventsConstants.EVENT_PARAM_VALUE_YES);
-            }
-            else
-            {
+            } else {
                 // The call to clear cookies will create the first instance of CookieSyncManager if necessary
                 Utility.clearFacebookCookies(context);
                 addLoggingExtra(ServerProtocol.DIALOG_PARAM_ACCESS_TOKEN, AppEventsConstants.EVENT_PARAM_VALUE_NO);
             }
 
-            WebDialog.OnCompleteListener listener = new WebDialog.OnCompleteListener()
-            {
+            WebDialog.OnCompleteListener listener = new WebDialog.OnCompleteListener() {
                 @Override
-                public void onComplete(Bundle values, FacebookException error)
-                {
+                public void onComplete(Bundle values, FacebookException error) {
                     onWebDialogComplete(request, values, error);
                 }
             };
@@ -996,14 +633,11 @@ class AuthorizationClient implements Serializable
         }
 
         void onWebDialogComplete(AuthorizationRequest request, Bundle values,
-                                 FacebookException error)
-        {
+                FacebookException error) {
             Result outcome;
-            if (values != null)
-            {
+            if (values != null) {
                 // Actual e2e we got from the dialog should be used for logging.
-                if (values.containsKey(ServerProtocol.DIALOG_PARAM_E2E))
-                {
+                if (values.containsKey(ServerProtocol.DIALOG_PARAM_E2E)) {
                     e2e = values.getString(ServerProtocol.DIALOG_PARAM_E2E);
                 }
 
@@ -1017,23 +651,17 @@ class AuthorizationClient implements Serializable
                 CookieSyncManager syncManager = CookieSyncManager.createInstance(context);
                 syncManager.sync();
                 saveCookieToken(token.getToken());
-            }
-            else
-            {
-                if (error instanceof FacebookOperationCanceledException)
-                {
+            } else {
+                if (error instanceof FacebookOperationCanceledException) {
                     outcome = Result.createCancelResult(pendingRequest, "User canceled log in.");
-                }
-                else
-                {
+                } else {
                     // Something went wrong, don't log a completion event since it will skew timing results.
                     e2e = null;
 
                     String errorCode = null;
                     String errorMessage = error.getMessage();
-                    if (error instanceof FacebookServiceException)
-                    {
-                        FacebookRequestError requestError = ((FacebookServiceException) error).getRequestError();
+                    if (error instanceof FacebookServiceException) {
+                        FacebookRequestError requestError = ((FacebookServiceException)error).getRequestError();
                         errorCode = String.format("%d", requestError.getErrorCode());
                         errorMessage = requestError.toString();
                     }
@@ -1041,30 +669,26 @@ class AuthorizationClient implements Serializable
                 }
             }
 
-            if (!Utility.isNullOrEmpty(e2e))
-            {
+            if (!Utility.isNullOrEmpty(e2e)) {
                 logWebLoginCompleted(applicationId, e2e);
             }
 
             completeAndValidate(outcome);
         }
 
-        private void saveCookieToken(String token)
-        {
+        private void saveCookieToken(String token) {
             Context context = getStartActivityDelegate().getActivityContext();
             SharedPreferences sharedPreferences = context.getSharedPreferences(
                     WEB_VIEW_AUTH_HANDLER_STORE,
                     Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(WEB_VIEW_AUTH_HANDLER_TOKEN_KEY, token);
-            if (!editor.commit())
-            {
+            if (!editor.commit()) {
                 Utility.logd(TAG, "Could not update saved web view auth handler token.");
             }
         }
 
-        private String loadCookieToken()
-        {
+        private String loadCookieToken() {
             Context context = getStartActivityDelegate().getActivityContext();
             SharedPreferences sharedPreferences = context.getSharedPreferences(
                     WEB_VIEW_AUTH_HANDLER_STORE,
@@ -1073,50 +697,41 @@ class AuthorizationClient implements Serializable
         }
     }
 
-    class GetTokenAuthHandler extends AuthHandler
-    {
+    class GetTokenAuthHandler extends AuthHandler {
         private static final long serialVersionUID = 1L;
         private transient GetTokenClient getTokenClient;
 
         @Override
-        String getNameForLogging()
-        {
+        String getNameForLogging() {
             return "get_token";
         }
 
         @Override
-        void cancel()
-        {
-            if (getTokenClient != null)
-            {
+        void cancel() {
+            if (getTokenClient != null) {
                 getTokenClient.cancel();
                 getTokenClient = null;
             }
         }
 
         @Override
-        boolean needsRestart()
-        {
+        boolean needsRestart() {
             // if the getTokenClient is null, that means an orientation change has occurred, and we need
             // to recreate the GetTokenClient, so return true to indicate we need a restart
             return getTokenClient == null;
         }
 
-        boolean tryAuthorize(final AuthorizationRequest request)
-        {
+        boolean tryAuthorize(final AuthorizationRequest request) {
             getTokenClient = new GetTokenClient(context, request.getApplicationId());
-            if (!getTokenClient.start())
-            {
+            if (!getTokenClient.start()) {
                 return false;
             }
 
             notifyBackgroundProcessingStart();
 
-            GetTokenClient.CompletedListener callback = new GetTokenClient.CompletedListener()
-            {
+            GetTokenClient.CompletedListener callback = new GetTokenClient.CompletedListener() {
                 @Override
-                public void completed(Bundle result)
-                {
+                public void completed(Bundle result) {
                     getTokenCompleted(request, result);
                 }
             };
@@ -1125,19 +740,16 @@ class AuthorizationClient implements Serializable
             return true;
         }
 
-        void getTokenCompleted(AuthorizationRequest request, Bundle result)
-        {
+        void getTokenCompleted(AuthorizationRequest request, Bundle result) {
             getTokenClient = null;
 
             notifyBackgroundProcessingStop();
 
-            if (result != null)
-            {
+            if (result != null) {
                 ArrayList<String> currentPermissions = result.getStringArrayList(NativeProtocol.EXTRA_PERMISSIONS);
                 List<String> permissions = request.getPermissions();
                 if ((currentPermissions != null) &&
-                        ((permissions == null) || currentPermissions.containsAll(permissions)))
-                {
+                        ((permissions == null) || currentPermissions.containsAll(permissions))) {
                     // We got all the permissions we needed, so we can complete the auth now.
                     AccessToken token = AccessToken
                             .createFromNativeLogin(result, AccessTokenSource.FACEBOOK_APPLICATION_SERVICE);
@@ -1149,15 +761,12 @@ class AuthorizationClient implements Serializable
                 // We didn't get all the permissions we wanted, so update the request with just the permissions
                 // we still need.
                 List<String> newPermissions = new ArrayList<String>();
-                for (String permission : permissions)
-                {
-                    if (!currentPermissions.contains(permission))
-                    {
+                for (String permission : permissions) {
+                    if (!currentPermissions.contains(permission)) {
                         newPermissions.add(permission);
                     }
                 }
-                if (!newPermissions.isEmpty())
-                {
+                if (!newPermissions.isEmpty()) {
                     addLoggingExtra(EVENT_EXTRAS_NEW_PERMISSIONS, TextUtils.join(",", newPermissions));
                 }
 
@@ -1168,23 +777,17 @@ class AuthorizationClient implements Serializable
         }
     }
 
-    abstract class KatanaAuthHandler extends AuthHandler
-    {
+    abstract class KatanaAuthHandler extends AuthHandler {
         private static final long serialVersionUID = 1L;
 
-        protected boolean tryIntent(Intent intent, int requestCode)
-        {
-            if (intent == null)
-            {
+        protected boolean tryIntent(Intent intent, int requestCode) {
+            if (intent == null) {
                 return false;
             }
 
-            try
-            {
+            try {
                 getStartActivityDelegate().startActivityForResult(intent, requestCode);
-            }
-            catch (ActivityNotFoundException e)
-            {
+            } catch (ActivityNotFoundException e) {
                 // We don't expect this to happen, since we've already validated the intent and bailed out before
                 // now if it couldn't be resolved.
                 return false;
@@ -1194,20 +797,17 @@ class AuthorizationClient implements Serializable
         }
     }
 
-    class KatanaProxyAuthHandler extends KatanaAuthHandler
-    {
+    class KatanaProxyAuthHandler extends KatanaAuthHandler {
         private static final long serialVersionUID = 1L;
         private String applicationId;
 
         @Override
-        String getNameForLogging()
-        {
+        String getNameForLogging() {
             return "katana_proxy_auth";
         }
 
         @Override
-        boolean tryAuthorize(AuthorizationRequest request)
-        {
+        boolean tryAuthorize(AuthorizationRequest request) {
             applicationId = request.getApplicationId();
 
             String e2e = getE2E();
@@ -1220,79 +820,256 @@ class AuthorizationClient implements Serializable
         }
 
         @Override
-        boolean onActivityResult(int requestCode, int resultCode, Intent data)
-        {
+        boolean onActivityResult(int requestCode, int resultCode, Intent data) {
             // Handle stuff
             Result outcome;
 
-            if (data == null)
-            {
+            if (data == null) {
                 // This happens if the user presses 'Back'.
                 outcome = Result.createCancelResult(pendingRequest, "Operation canceled");
-            }
-            else if (resultCode == Activity.RESULT_CANCELED)
-            {
+            } else if (resultCode == Activity.RESULT_CANCELED) {
                 outcome = Result.createCancelResult(pendingRequest, data.getStringExtra("error"));
-            }
-            else if (resultCode != Activity.RESULT_OK)
-            {
+            } else if (resultCode != Activity.RESULT_OK) {
                 outcome = Result.createErrorResult(pendingRequest, "Unexpected resultCode from authorization.", null);
-            }
-            else
-            {
+            } else {
                 outcome = handleResultOk(data);
             }
 
-            if (outcome != null)
-            {
+            if (outcome != null) {
                 completeAndValidate(outcome);
-            }
-            else
-            {
+            } else {
                 tryNextHandler();
             }
             return true;
         }
 
-        private Result handleResultOk(Intent data)
-        {
+        private Result handleResultOk(Intent data) {
             Bundle extras = data.getExtras();
             String error = extras.getString("error");
-            if (error == null)
-            {
+            if (error == null) {
                 error = extras.getString("error_type");
             }
             String errorCode = extras.getString("error_code");
             String errorMessage = extras.getString("error_message");
-            if (errorMessage == null)
-            {
+            if (errorMessage == null) {
                 errorMessage = extras.getString("error_description");
             }
 
             String e2e = extras.getString(NativeProtocol.FACEBOOK_PROXY_AUTH_E2E_KEY);
-            if (!Utility.isNullOrEmpty(e2e))
-            {
+            if (!Utility.isNullOrEmpty(e2e)) {
                 logWebLoginCompleted(applicationId, e2e);
             }
 
-            if (error == null && errorCode == null && errorMessage == null)
-            {
+            if (error == null && errorCode == null && errorMessage == null) {
                 AccessToken token = AccessToken.createFromWebBundle(pendingRequest.getPermissions(), extras,
                         AccessTokenSource.FACEBOOK_APPLICATION_WEB);
                 return Result.createTokenResult(pendingRequest, token);
-            }
-            else if (ServerProtocol.errorsProxyAuthDisabled.contains(error))
-            {
+            } else if (ServerProtocol.errorsProxyAuthDisabled.contains(error)) {
                 return null;
-            }
-            else if (ServerProtocol.errorsUserCanceled.contains(error))
-            {
+            } else if (ServerProtocol.errorsUserCanceled.contains(error)) {
                 return Result.createCancelResult(pendingRequest, null);
-            }
-            else
-            {
+            } else {
                 return Result.createErrorResult(pendingRequest, error, errorMessage, errorCode);
             }
+        }
+    }
+
+    private static String getE2E() {
+        JSONObject e2e = new JSONObject();
+        try {
+            e2e.put("init", System.currentTimeMillis());
+        } catch (JSONException e) {
+        }
+        return e2e.toString();
+    }
+
+    private void logWebLoginCompleted(String applicationId, String e2e) {
+        AppEventsLogger appEventsLogger = AppEventsLogger.newLogger(context, applicationId);
+
+        Bundle parameters = new Bundle();
+        parameters.putString(AnalyticsEvents.PARAMETER_WEB_LOGIN_E2E, e2e);
+        parameters.putLong(AnalyticsEvents.PARAMETER_WEB_LOGIN_SWITCHBACK_TIME, System.currentTimeMillis());
+        parameters.putString(AnalyticsEvents.PARAMETER_APP_ID, applicationId);
+
+        appEventsLogger.logSdkEvent(AnalyticsEvents.EVENT_WEB_LOGIN_COMPLETE, null, parameters);
+    }
+
+    static class AuthDialogBuilder extends WebDialog.Builder {
+        private static final String OAUTH_DIALOG = "oauth";
+        static final String REDIRECT_URI = "fbconnect://success";
+        private String e2e;
+        private boolean isRerequest;
+
+        public AuthDialogBuilder(Context context, String applicationId, Bundle parameters) {
+            super(context, applicationId, OAUTH_DIALOG, parameters);
+        }
+
+        public AuthDialogBuilder setE2E(String e2e) {
+            this.e2e = e2e;
+            return this;
+        }
+
+        public AuthDialogBuilder setIsRerequest(boolean isRerequest) {
+            this.isRerequest = isRerequest;
+            return this;
+        }
+
+        @Override
+        public WebDialog build() {
+            Bundle parameters = getParameters();
+            parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
+            parameters.putString(ServerProtocol.DIALOG_PARAM_CLIENT_ID, getApplicationId());
+            parameters.putString(ServerProtocol.DIALOG_PARAM_E2E, e2e);
+            parameters.putString(ServerProtocol.DIALOG_PARAM_RESPONSE_TYPE, ServerProtocol.DIALOG_RESPONSE_TYPE_TOKEN);
+            parameters.putString(ServerProtocol.DIALOG_PARAM_RETURN_SCOPES, ServerProtocol.DIALOG_RETURN_SCOPES_TRUE);
+
+            // Only set the rerequest auth type for non legacy requests
+            if (isRerequest && !Settings.getPlatformCompatibilityEnabled()) {
+                parameters.putString(ServerProtocol.DIALOG_PARAM_AUTH_TYPE, ServerProtocol.DIALOG_REREQUEST_AUTH_TYPE);
+            }
+
+            return new WebDialog(getContext(), OAUTH_DIALOG, parameters, getTheme(), getListener());
+        }
+    }
+
+    static class AuthorizationRequest implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private transient final StartActivityDelegate startActivityDelegate;
+        private final SessionLoginBehavior loginBehavior;
+        private final int requestCode;
+        private boolean isLegacy = false;
+        private List<String> permissions;
+        private final SessionDefaultAudience defaultAudience;
+        private final String applicationId;
+        private final String previousAccessToken;
+        private final String authId;
+        private boolean isRerequest = false;
+
+        AuthorizationRequest(SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
+                List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,
+                String validateSameFbidAsToken, StartActivityDelegate startActivityDelegate, String authId) {
+            this.loginBehavior = loginBehavior;
+            this.requestCode = requestCode;
+            this.isLegacy = isLegacy;
+            this.permissions = permissions;
+            this.defaultAudience = defaultAudience;
+            this.applicationId = applicationId;
+            this.previousAccessToken = validateSameFbidAsToken;
+            this.startActivityDelegate = startActivityDelegate;
+            this.authId = authId;
+        }
+
+        StartActivityDelegate getStartActivityDelegate() {
+            return startActivityDelegate;
+        }
+
+        List<String> getPermissions() {
+            return permissions;
+        }
+
+        void setPermissions(List<String> permissions) {
+            this.permissions = permissions;
+        }
+
+        SessionLoginBehavior getLoginBehavior() {
+            return loginBehavior;
+        }
+
+        int getRequestCode() {
+            return requestCode;
+        }
+
+        SessionDefaultAudience getDefaultAudience() {
+            return defaultAudience;
+        }
+
+        String getApplicationId() {
+            return applicationId;
+        }
+
+        boolean isLegacy() {
+            return isLegacy;
+        }
+
+        void setIsLegacy(boolean isLegacy) {
+            this.isLegacy = isLegacy;
+        }
+
+        String getPreviousAccessToken() {
+            return previousAccessToken;
+        }
+
+        boolean needsNewTokenValidation() {
+            return previousAccessToken != null && !isLegacy;
+        }
+
+        String getAuthId() {
+            return authId;
+        }
+
+        boolean isRerequest() {
+            return isRerequest;
+        }
+
+        void setRerequest(boolean isRerequest) {
+            this.isRerequest = isRerequest;
+        }
+    }
+
+
+    static class Result implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        enum Code {
+            SUCCESS("success"),
+            CANCEL("cancel"),
+            ERROR("error");
+
+            private final String loggingValue;
+
+            Code(String loggingValue) {
+                this.loggingValue = loggingValue;
+            }
+
+            // For consistency across platforms, we want to use specific string values when logging these results.
+            String getLoggingValue() {
+                return loggingValue;
+            }
+        }
+
+        final Code code;
+        final AccessToken token;
+        final String errorMessage;
+        final String errorCode;
+        final AuthorizationRequest request;
+        Map<String, String> loggingExtras;
+
+        private Result(AuthorizationRequest request, Code code, AccessToken token, String errorMessage,
+                String errorCode) {
+            this.request = request;
+            this.token = token;
+            this.errorMessage = errorMessage;
+            this.code = code;
+            this.errorCode = errorCode;
+        }
+
+        static Result createTokenResult(AuthorizationRequest request, AccessToken token) {
+            return new Result(request, Code.SUCCESS, token, null, null);
+        }
+
+        static Result createCancelResult(AuthorizationRequest request, String message) {
+            return new Result(request, Code.CANCEL, null, message, null);
+        }
+
+        static Result createErrorResult(AuthorizationRequest request, String errorType, String errorDescription) {
+            return createErrorResult(request, errorType, errorDescription, null);
+        }
+
+        static Result createErrorResult(AuthorizationRequest request, String errorType, String errorDescription,
+                String errorCode) {
+            String message = TextUtils.join(": ", Utility.asListNoNulls(errorType, errorDescription));
+            return new Result(request, Code.ERROR, null, message, errorCode);
         }
     }
 }

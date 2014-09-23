@@ -36,8 +36,7 @@ import com.facebook.android.R;
  * </pre>
  * Do not start this activity directly.
  */
-public class LoginActivity extends Activity
-{
+public class LoginActivity extends Activity {
     static final String RESULT_KEY = "com.facebook.LoginActivity:Result";
 
     private static final String TAG = LoginActivity.class.getName();
@@ -52,58 +51,41 @@ public class LoginActivity extends Activity
     private AuthorizationClient authorizationClient;
     private AuthorizationClient.AuthorizationRequest request;
 
-    static Bundle populateIntentExtras(AuthorizationClient.AuthorizationRequest request)
-    {
-        Bundle extras = new Bundle();
-        extras.putSerializable(EXTRA_REQUEST, request);
-        return extras;
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.com_facebook_login_activity_layout);
 
-        if (savedInstanceState != null)
-        {
+        if (savedInstanceState != null) {
             callingPackage = savedInstanceState.getString(SAVED_CALLING_PKG_KEY);
             authorizationClient = (AuthorizationClient) savedInstanceState.getSerializable(SAVED_AUTH_CLIENT);
-        }
-        else
-        {
+        } else {
             callingPackage = getCallingPackage();
             authorizationClient = new AuthorizationClient();
             request = (AuthorizationClient.AuthorizationRequest) getIntent().getSerializableExtra(EXTRA_REQUEST);
         }
 
         authorizationClient.setContext(this);
-        authorizationClient.setOnCompletedListener(new AuthorizationClient.OnCompletedListener()
-        {
+        authorizationClient.setOnCompletedListener(new AuthorizationClient.OnCompletedListener() {
             @Override
-            public void onCompleted(AuthorizationClient.Result outcome)
-            {
+            public void onCompleted(AuthorizationClient.Result outcome) {
                 onAuthClientCompleted(outcome);
             }
         });
-        authorizationClient.setBackgroundProcessingListener(new AuthorizationClient.BackgroundProcessingListener()
-        {
+        authorizationClient.setBackgroundProcessingListener(new AuthorizationClient.BackgroundProcessingListener() {
             @Override
-            public void onBackgroundProcessingStarted()
-            {
+            public void onBackgroundProcessingStarted() {
                 findViewById(R.id.com_facebook_login_activity_progress_bar).setVisibility(View.VISIBLE);
             }
 
             @Override
-            public void onBackgroundProcessingStopped()
-            {
+            public void onBackgroundProcessingStopped() {
                 findViewById(R.id.com_facebook_login_activity_progress_bar).setVisibility(View.GONE);
             }
         });
     }
 
-    private void onAuthClientCompleted(AuthorizationClient.Result outcome)
-    {
+    private void onAuthClientCompleted(AuthorizationClient.Result outcome) {
         request = null;
 
         int resultCode = (outcome.code == AuthorizationClient.Result.Code.CANCEL) ?
@@ -120,15 +102,13 @@ public class LoginActivity extends Activity
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
         // If the calling package is null, this generally means that the callee was started
         // with a launchMode of singleInstance. Unfortunately, Android does not allow a result
         // to be set when the callee is a singleInstance, so we log an error and return.
-        if (callingPackage == null)
-        {
+        if (callingPackage == null) {
             Log.e(TAG, NULL_CALLING_PKG_ERROR_MSG);
             finish();
             return;
@@ -138,8 +118,7 @@ public class LoginActivity extends Activity
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
 
         authorizationClient.cancelCurrentHandler();
@@ -147,8 +126,7 @@ public class LoginActivity extends Activity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState)
-    {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putString(SAVED_CALLING_PKG_KEY, callingPackage);
@@ -156,8 +134,13 @@ public class LoginActivity extends Activity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         authorizationClient.onActivityResult(requestCode, resultCode, data);
+    }
+
+    static Bundle populateIntentExtras(AuthorizationClient.AuthorizationRequest request) {
+        Bundle extras = new Bundle();
+        extras.putSerializable(EXTRA_REQUEST, request);
+        return extras;
     }
 }

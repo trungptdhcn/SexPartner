@@ -33,12 +33,9 @@ import java.net.HttpURLConnection;
  * handling, see <a href="https://developers.facebook.com/docs/reference/api/errors/">
  * https://developers.facebook.com/docs/reference/api/errors/</a>
  */
-public final class FacebookRequestError
-{
+public final class FacebookRequestError {
 
-    /**
-     * Represents an invalid or unknown error code from the server.
-     */
+    /** Represents an invalid or unknown error code from the server. */
     public static final int INVALID_ERROR_CODE = -1;
 
     /**
@@ -64,6 +61,20 @@ public final class FacebookRequestError
     private static final String ERROR_USER_TITLE_KEY = "error_user_title";
     private static final String ERROR_USER_MSG_KEY = "error_user_msg";
     private static final String ERROR_IS_TRANSIENT_KEY = "is_transient";
+
+    private static class Range {
+        private final int start, end;
+
+        private Range(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        boolean contains(int value) {
+            return start <= value && value <= end;
+        }
+    }
+
     private static final int EC_UNKNOWN_ERROR = 1;
     private static final int EC_SERVICE_UNAVAILABLE = 2;
     private static final int EC_APP_TOO_MANY_CALLS = 4;
@@ -77,9 +88,11 @@ public final class FacebookRequestError
     private static final int EC_PASSWORD_CHANGED = 460;
     private static final int EC_EXPIRED = 463;
     private static final int EC_UNCONFIRMED_USER = 464;
+
     private static final Range HTTP_RANGE_SUCCESS = new Range(200, 299);
     private static final Range HTTP_RANGE_CLIENT_ERROR = new Range(400, 499);
     private static final Range HTTP_RANGE_SERVER_ERROR = new Range(500, 599);
+
     private final int userActionMessageId;
     private final boolean shouldNotifyUser;
     private final Category category;
@@ -98,10 +111,9 @@ public final class FacebookRequestError
     private final FacebookException exception;
 
     private FacebookRequestError(int requestStatusCode, int errorCode,
-                                 int subErrorCode, String errorType, String errorMessage, String errorUserTitle, String errorUserMessage,
-                                 boolean errorIsTransient, JSONObject requestResultBody, JSONObject requestResult, Object batchRequestResult,
-                                 HttpURLConnection connection, FacebookException exception)
-    {
+            int subErrorCode, String errorType, String errorMessage, String errorUserTitle, String errorUserMessage,
+            boolean errorIsTransient, JSONObject requestResultBody, JSONObject requestResult, Object batchRequestResult,
+            HttpURLConnection connection, FacebookException exception) {
         this.requestStatusCode = requestStatusCode;
         this.errorCode = errorCode;
         this.subErrorCode = subErrorCode;
@@ -116,13 +128,10 @@ public final class FacebookRequestError
         this.errorIsTransient = errorIsTransient;
 
         boolean isLocalException = false;
-        if (exception != null)
-        {
+        if (exception != null) {
             this.exception = exception;
-            isLocalException = true;
-        }
-        else
-        {
+            isLocalException =  true;
+        } else {
             this.exception = new FacebookServiceException(this, errorMessage);
         }
 
@@ -131,73 +140,49 @@ public final class FacebookRequestError
         Category errorCategory = null;
         int messageId = INVALID_MESSAGE_ID;
         boolean shouldNotify = false;
-        if (isLocalException)
-        {
+        if (isLocalException) {
             errorCategory = Category.CLIENT;
             messageId = INVALID_MESSAGE_ID;
-        }
-        else
-        {
-            if (errorCode == EC_UNKNOWN_ERROR || errorCode == EC_SERVICE_UNAVAILABLE)
-            {
+        } else {
+            if (errorCode == EC_UNKNOWN_ERROR || errorCode == EC_SERVICE_UNAVAILABLE) {
                 errorCategory = Category.SERVER;
-            }
-            else if (errorCode == EC_APP_TOO_MANY_CALLS || errorCode == EC_USER_TOO_MANY_CALLS)
-            {
+            } else if (errorCode == EC_APP_TOO_MANY_CALLS || errorCode == EC_USER_TOO_MANY_CALLS) {
                 errorCategory = Category.THROTTLING;
-            }
-            else if (errorCode == EC_PERMISSION_DENIED || EC_RANGE_PERMISSION.contains(errorCode))
-            {
+            } else if (errorCode == EC_PERMISSION_DENIED || EC_RANGE_PERMISSION.contains(errorCode)) {
                 errorCategory = Category.PERMISSION;
                 messageId = R.string.com_facebook_requesterror_permissions;
-            }
-            else if (errorCode == EC_INVALID_SESSION || errorCode == EC_INVALID_TOKEN)
-            {
-                if (subErrorCode == EC_USER_CHECKPOINTED || subErrorCode == EC_UNCONFIRMED_USER)
-                {
+            } else if (errorCode == EC_INVALID_SESSION || errorCode == EC_INVALID_TOKEN) {
+                if (subErrorCode == EC_USER_CHECKPOINTED || subErrorCode == EC_UNCONFIRMED_USER) {
                     errorCategory = Category.AUTHENTICATION_RETRY;
                     messageId = R.string.com_facebook_requesterror_web_login;
                     shouldNotify = true;
-                }
-                else
-                {
+                } else {
                     errorCategory = Category.AUTHENTICATION_REOPEN_SESSION;
 
-                    if ((subErrorCode == EC_APP_NOT_INSTALLED) || (subErrorCode == EC_EXPIRED))
-                    {
+                    if ((subErrorCode == EC_APP_NOT_INSTALLED) || (subErrorCode == EC_EXPIRED)) {
                         messageId = R.string.com_facebook_requesterror_relogin;
-                    }
-                    else if (subErrorCode == EC_PASSWORD_CHANGED)
-                    {
+                    } else if (subErrorCode == EC_PASSWORD_CHANGED) {
                         messageId = R.string.com_facebook_requesterror_password_changed;
-                    }
-                    else
-                    {
+                    } else {
                         messageId = R.string.com_facebook_requesterror_reconnect;
                         shouldNotify = true;
                     }
                 }
             }
 
-            if (errorCategory == null)
-            {
-                if (HTTP_RANGE_CLIENT_ERROR.contains(requestStatusCode))
-                {
+            if (errorCategory == null) {
+                if (HTTP_RANGE_CLIENT_ERROR.contains(requestStatusCode)) {
                     errorCategory = Category.BAD_REQUEST;
-                }
-                else if (HTTP_RANGE_SERVER_ERROR.contains(requestStatusCode))
-                {
+                } else if (HTTP_RANGE_SERVER_ERROR.contains(requestStatusCode)) {
                     errorCategory = Category.SERVER;
-                }
-                else
-                {
+                } else {
                     errorCategory = Category.OTHER;
                 }
             }
         }
 
         // Notify user when error_user_msg is present
-        shouldNotify = errorUserMessage != null && errorUserMessage.length() > 0;
+        shouldNotify = errorUserMessage!= null && errorUserMessage.length() > 0;
 
         this.category = errorCategory;
         this.userActionMessageId = messageId;
@@ -205,102 +190,23 @@ public final class FacebookRequestError
     }
 
     private FacebookRequestError(int requestStatusCode, int errorCode,
-                                 int subErrorCode, String errorType, String errorMessage, String errorUserTitle, String errorUserMessage,
-                                 boolean errorIsTransient, JSONObject requestResultBody, JSONObject requestResult, Object batchRequestResult,
-                                 HttpURLConnection connection)
-    {
+            int subErrorCode, String errorType, String errorMessage, String errorUserTitle, String errorUserMessage,
+            boolean errorIsTransient, JSONObject requestResultBody, JSONObject requestResult, Object batchRequestResult,
+            HttpURLConnection connection) {
         this(requestStatusCode, errorCode, subErrorCode, errorType, errorMessage, errorUserTitle, errorUserMessage,
                 errorIsTransient, requestResultBody, requestResult, batchRequestResult, connection, null);
     }
 
-    FacebookRequestError(HttpURLConnection connection, Exception exception)
-    {
+    FacebookRequestError(HttpURLConnection connection, Exception exception) {
         this(INVALID_HTTP_STATUS_CODE, INVALID_ERROR_CODE, INVALID_ERROR_CODE,
                 null, null, null, null, false, null, null, null, connection,
                 (exception instanceof FacebookException) ?
                         (FacebookException) exception : new FacebookException(exception));
     }
 
-    public FacebookRequestError(int errorCode, String errorType, String errorMessage)
-    {
+    public FacebookRequestError(int errorCode, String errorType, String errorMessage) {
         this(INVALID_HTTP_STATUS_CODE, errorCode, INVALID_ERROR_CODE, errorType, errorMessage,
                 null, null, false, null, null, null, null, null);
-    }
-
-    static FacebookRequestError checkResponseAndCreateError(JSONObject singleResult,
-                                                            Object batchResult, HttpURLConnection connection)
-    {
-        try
-        {
-            if (singleResult.has(CODE_KEY))
-            {
-                int responseCode = singleResult.getInt(CODE_KEY);
-                Object body = Utility.getStringPropertyAsJSON(singleResult, BODY_KEY,
-                        Response.NON_JSON_RESPONSE_PROPERTY);
-
-                if (body != null && body instanceof JSONObject)
-                {
-                    JSONObject jsonBody = (JSONObject) body;
-                    // Does this response represent an error from the service? We might get either an "error"
-                    // with several sub-properties, or else one or more top-level fields containing error info.
-                    String errorType = null;
-                    String errorMessage = null;
-                    String errorUserMessage = null;
-                    String errorUserTitle = null;
-                    boolean errorIsTransient = false;
-                    int errorCode = INVALID_ERROR_CODE;
-                    int errorSubCode = INVALID_ERROR_CODE;
-
-                    boolean hasError = false;
-                    if (jsonBody.has(ERROR_KEY))
-                    {
-                        // We assume the error object is correctly formatted.
-                        JSONObject error = (JSONObject) Utility.getStringPropertyAsJSON(jsonBody, ERROR_KEY, null);
-
-                        errorType = error.optString(ERROR_TYPE_FIELD_KEY, null);
-                        errorMessage = error.optString(ERROR_MESSAGE_FIELD_KEY, null);
-                        errorCode = error.optInt(ERROR_CODE_FIELD_KEY, INVALID_ERROR_CODE);
-                        errorSubCode = error.optInt(ERROR_SUB_CODE_KEY, INVALID_ERROR_CODE);
-                        errorUserMessage = error.optString(ERROR_USER_MSG_KEY, null);
-                        errorUserTitle = error.optString(ERROR_USER_TITLE_KEY, null);
-                        errorIsTransient = error.optBoolean(ERROR_IS_TRANSIENT_KEY, false);
-                        hasError = true;
-                    }
-                    else if (jsonBody.has(ERROR_CODE_KEY) || jsonBody.has(ERROR_MSG_KEY)
-                            || jsonBody.has(ERROR_REASON_KEY))
-                    {
-                        errorType = jsonBody.optString(ERROR_REASON_KEY, null);
-                        errorMessage = jsonBody.optString(ERROR_MSG_KEY, null);
-                        errorCode = jsonBody.optInt(ERROR_CODE_KEY, INVALID_ERROR_CODE);
-                        errorSubCode = jsonBody.optInt(ERROR_SUB_CODE_KEY, INVALID_ERROR_CODE);
-                        hasError = true;
-                    }
-
-                    if (hasError)
-                    {
-                        return new FacebookRequestError(responseCode, errorCode, errorSubCode,
-                                errorType, errorMessage, errorUserTitle, errorUserMessage, errorIsTransient, jsonBody,
-                                singleResult, batchResult, connection);
-                    }
-                }
-
-                // If we didn't get error details, but we did get a failure response code, report it.
-                if (!HTTP_RANGE_SUCCESS.contains(responseCode))
-                {
-                    return new FacebookRequestError(responseCode, INVALID_ERROR_CODE,
-                            INVALID_ERROR_CODE, null, null, null, null, false,
-                            singleResult.has(BODY_KEY) ?
-                                    (JSONObject) Utility.getStringPropertyAsJSON(
-                                            singleResult, BODY_KEY, Response.NON_JSON_RESPONSE_PROPERTY) : null,
-                            singleResult, batchResult, connection);
-                }
-            }
-        }
-        catch (JSONException e)
-        {
-            // defer the throwing of a JSONException to the graph object proxy
-        }
-        return null;
     }
 
     /**
@@ -309,8 +215,7 @@ public final class FacebookRequestError
      *
      * @return a user-friendly message to present to the user
      */
-    public int getUserActionMessageId()
-    {
+    public int getUserActionMessageId() {
         return userActionMessageId;
     }
 
@@ -321,8 +226,7 @@ public final class FacebookRequestError
      *
      * @return whether direct user action is required
      */
-    public boolean shouldNotifyUser()
-    {
+    public boolean shouldNotifyUser() {
         return shouldNotifyUser;
     }
 
@@ -333,8 +237,7 @@ public final class FacebookRequestError
      *
      * @return the category in which the error belong
      */
-    public Category getCategory()
-    {
+    public Category getCategory() {
         return category;
     }
 
@@ -343,8 +246,7 @@ public final class FacebookRequestError
      *
      * @return the HTTP status code for the request
      */
-    public int getRequestStatusCode()
-    {
+    public int getRequestStatusCode() {
         return requestStatusCode;
     }
 
@@ -353,8 +255,7 @@ public final class FacebookRequestError
      *
      * @return the error code returned from Facebook
      */
-    public int getErrorCode()
-    {
+    public int getErrorCode() {
         return errorCode;
     }
 
@@ -363,8 +264,7 @@ public final class FacebookRequestError
      *
      * @return the sub-error code returned from Facebook
      */
-    public int getSubErrorCode()
-    {
+    public int getSubErrorCode() {
         return subErrorCode;
     }
 
@@ -375,8 +275,7 @@ public final class FacebookRequestError
      *
      * @return the type of error as a raw string
      */
-    public String getErrorType()
-    {
+    public String getErrorType() {
         return errorType;
     }
 
@@ -385,14 +284,10 @@ public final class FacebookRequestError
      *
      * @return the error message returned from Facebook
      */
-    public String getErrorMessage()
-    {
-        if (errorMessage != null)
-        {
+    public String getErrorMessage() {
+        if (errorMessage != null) {
             return errorMessage;
-        }
-        else
-        {
+        } else {
             return exception.getLocalizedMessage();
         }
     }
@@ -404,8 +299,7 @@ public final class FacebookRequestError
      *
      * @return the error message returned from Facebook
      */
-    public String getErrorUserMessage()
-    {
+    public String getErrorUserMessage() {
         return errorUserMessage;
     }
 
@@ -416,8 +310,7 @@ public final class FacebookRequestError
      *
      * @return the error message returned from Facebook
      */
-    public String getErrorUserTitle()
-    {
+    public String getErrorUserTitle() {
         return errorUserTitle;
     }
 
@@ -425,8 +318,7 @@ public final class FacebookRequestError
      * @return true if given error is transient and may succeed if the initial action is retried as-is.
      * Application may use this information to display a "Retry" button, if user should be notified about this error.
      */
-    public boolean getErrorIsTransient()
-    {
+    public boolean getErrorIsTransient() {
         return errorIsTransient;
     }
 
@@ -435,8 +327,7 @@ public final class FacebookRequestError
      *
      * @return the body of the response for the request
      */
-    public JSONObject getRequestResultBody()
-    {
+    public JSONObject getRequestResultBody() {
         return requestResultBody;
     }
 
@@ -448,8 +339,7 @@ public final class FacebookRequestError
      *
      * @return the full JSON response for the request
      */
-    public JSONObject getRequestResult()
-    {
+    public JSONObject getRequestResult() {
         return requestResult;
     }
 
@@ -462,8 +352,7 @@ public final class FacebookRequestError
      *
      * @return the full JSON response for the batch
      */
-    public Object getBatchRequestResult()
-    {
+    public Object getBatchRequestResult() {
         return batchRequestResult;
     }
 
@@ -472,8 +361,7 @@ public final class FacebookRequestError
      *
      * @return the HTTP connection used to make the request
      */
-    public HttpURLConnection getConnection()
-    {
+    public HttpURLConnection getConnection() {
         return connection;
     }
 
@@ -482,14 +370,12 @@ public final class FacebookRequestError
      *
      * @return the exception associated with this request
      */
-    public FacebookException getException()
-    {
+    public FacebookException getException() {
         return exception;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return new StringBuilder("{HttpStatus: ")
                 .append(requestStatusCode)
                 .append(", errorCode: ")
@@ -502,11 +388,75 @@ public final class FacebookRequestError
                 .toString();
     }
 
+    static FacebookRequestError checkResponseAndCreateError(JSONObject singleResult,
+            Object batchResult, HttpURLConnection connection) {
+        try {
+            if (singleResult.has(CODE_KEY)) {
+                int responseCode = singleResult.getInt(CODE_KEY);
+                Object body = Utility.getStringPropertyAsJSON(singleResult, BODY_KEY,
+                        Response.NON_JSON_RESPONSE_PROPERTY);
+
+                if (body != null && body instanceof JSONObject) {
+                    JSONObject jsonBody = (JSONObject) body;
+                    // Does this response represent an error from the service? We might get either an "error"
+                    // with several sub-properties, or else one or more top-level fields containing error info.
+                    String errorType = null;
+                    String errorMessage = null;
+                    String errorUserMessage = null;
+                    String errorUserTitle = null;
+                    boolean errorIsTransient = false;
+                    int errorCode = INVALID_ERROR_CODE;
+                    int errorSubCode = INVALID_ERROR_CODE;
+
+                    boolean hasError = false;
+                    if (jsonBody.has(ERROR_KEY)) {
+                        // We assume the error object is correctly formatted.
+                        JSONObject error = (JSONObject) Utility.getStringPropertyAsJSON(jsonBody, ERROR_KEY, null);
+
+                        errorType = error.optString(ERROR_TYPE_FIELD_KEY, null);
+                        errorMessage = error.optString(ERROR_MESSAGE_FIELD_KEY, null);
+                        errorCode = error.optInt(ERROR_CODE_FIELD_KEY, INVALID_ERROR_CODE);
+                        errorSubCode = error.optInt(ERROR_SUB_CODE_KEY, INVALID_ERROR_CODE);
+                        errorUserMessage =  error.optString(ERROR_USER_MSG_KEY, null);
+                        errorUserTitle =  error.optString(ERROR_USER_TITLE_KEY, null);
+                        errorIsTransient = error.optBoolean(ERROR_IS_TRANSIENT_KEY, false);
+                        hasError = true;
+                    } else if (jsonBody.has(ERROR_CODE_KEY) || jsonBody.has(ERROR_MSG_KEY)
+                            || jsonBody.has(ERROR_REASON_KEY)) {
+                        errorType = jsonBody.optString(ERROR_REASON_KEY, null);
+                        errorMessage = jsonBody.optString(ERROR_MSG_KEY, null);
+                        errorCode = jsonBody.optInt(ERROR_CODE_KEY, INVALID_ERROR_CODE);
+                        errorSubCode = jsonBody.optInt(ERROR_SUB_CODE_KEY, INVALID_ERROR_CODE);
+                        hasError = true;
+                    }
+
+                    if (hasError) {
+                        return new FacebookRequestError(responseCode, errorCode, errorSubCode,
+                                errorType, errorMessage, errorUserTitle, errorUserMessage, errorIsTransient, jsonBody,
+                                singleResult, batchResult, connection);
+                    }
+                }
+
+                // If we didn't get error details, but we did get a failure response code, report it.
+                if (!HTTP_RANGE_SUCCESS.contains(responseCode)) {
+                    return new FacebookRequestError(responseCode, INVALID_ERROR_CODE,
+                            INVALID_ERROR_CODE, null, null, null, null, false,
+                            singleResult.has(BODY_KEY) ?
+                                    (JSONObject) Utility.getStringPropertyAsJSON(
+                                            singleResult, BODY_KEY, Response.NON_JSON_RESPONSE_PROPERTY) : null,
+                            singleResult, batchResult, connection);
+                }
+            }
+        } catch (JSONException e) {
+            // defer the throwing of a JSONException to the graph object proxy
+        }
+        return null;
+    }
+
     /**
      * An enum that represents the Facebook SDK classification for the error that occurred.
      */
-    public enum Category
-    {
+    public enum Category {
         /**
          * Indicates that the error is authentication related, and that the app should retry
          * the request after some user action.
@@ -519,9 +469,7 @@ public final class FacebookRequestError
          */
         AUTHENTICATION_REOPEN_SESSION,
 
-        /**
-         * Indicates that the error is permission related.
-         */
+        /** Indicates that the error is permission related. */
         PERMISSION,
 
         /**
@@ -530,9 +478,7 @@ public final class FacebookRequestError
          */
         SERVER,
 
-        /**
-         * Indicates that the error results from the server throttling the client.
-         */
+        /** Indicates that the error results from the server throttling the client. */
         THROTTLING,
 
         /**
@@ -552,24 +498,6 @@ public final class FacebookRequestError
          * not limited to, JSON parsing errors or {@link java.io.IOException}s.
          */
         CLIENT
-    }
-
-    private static class Range
-    {
-        private final int start, end;
-
-        private Range(int start, int end)
-        {
-            this.start = start;
-            this.end = end;
-        }
-
-        boolean contains(int value)
-        {
-            return start <= value && value <= end;
-        }
-    }
-
-    ;
+    };
 
 }

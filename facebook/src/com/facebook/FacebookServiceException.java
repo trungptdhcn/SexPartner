@@ -19,19 +19,18 @@ package com.facebook;
 /**
  * Represents an error returned from the Facebook service in response to a request.
  */
-public class FacebookServiceException extends FacebookException
-{
+public class FacebookServiceException extends FacebookException {
+
+    private final FacebookRequestError error;
 
     private static final long serialVersionUID = 1;
-    private final FacebookRequestError error;
 
     /**
      * Constructs a new FacebookServiceException.
      *
      * @param error the error from the request
      */
-    public FacebookServiceException(FacebookRequestError error, String errorMessage)
-    {
+    public FacebookServiceException(FacebookRequestError error, String errorMessage) {
         super(errorMessage);
         this.error = error;
     }
@@ -41,14 +40,12 @@ public class FacebookServiceException extends FacebookException
      *
      * @return complete information representing the error.
      */
-    public final FacebookRequestError getRequestError()
-    {
+    public final FacebookRequestError getRequestError() {
         return error;
     }
 
     @Override
-    public final String toString()
-    {
+    public final String toString() {
         return new StringBuilder()
                 .append("{FacebookServiceException: ")
                 .append("httpResponseCode: ")

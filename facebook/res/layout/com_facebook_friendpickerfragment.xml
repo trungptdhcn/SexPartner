@@ -1,73 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2010-present Facebook.
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res/com.mikhaellopez.circularimageviewsample"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/background">
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-    <!--<include layout="@layout/com_facebook_picker_title_bar_stub"/>-->
-    <RelativeLayout
-            android:id="@+id/select_your_partner_rlHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-        <ImageView
-                android:id="@+id/select_your_partner_ivBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/_15dp"
-                android:background="@drawable/bt_back2"/>
-        <TextView
-                android:id="@+id/select_your_partner_tvTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                style="@style/title_style_text"
-                android:textSize="@dimen/_18dp"
-                android:textStyle="bold"
-                android:text="@string/select_your_partner"
-                android:gravity="center"/>
-    </RelativeLayout>
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="@dimen/_80dp"
-            >
-        <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="@dimen/_60dp"
-                android:background="@color/Black"
-                android:alpha="0.8"
-                android:layout_centerInParent="true">
-        </RelativeLayout>
-        <com.mikhaellopez.circularimageview.CircularImageView
-                android:id="@+id/select_your_partner_ivAvatar"
-                android:layout_width="@dimen/_70dp"
-                android:layout_height="@dimen/_70dp"
-                android:src="@drawable/test"
-                android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="@dimen/_10dp"
-                />
-        <TextView
-                android:id="@+id/select_your_partner_tvName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:gravity="center"
-                android:text="JOHN DOE"
-                android:layout_toLeftOf="@+id/select_your_partner_ivAvatar"
-                style="@style/title_style_text"
-                android:textSize="@dimen/_18dp"
-                android:textStyle="bold"
-                android:textColor="@color/White"
-                android:layout_marginRight="@dimen/_10dp"/>
-    </RelativeLayout>
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="#FFFFFF">
+
+    <include layout="@layout/com_facebook_picker_title_bar_stub"/>
 
     <ListView
             android:id="@+id/com_facebook_picker_list_view"
@@ -78,8 +31,6 @@
             android:scrollbars="vertical"
             android:listSelector="@drawable/com_facebook_picker_list_selector"
             android:cacheColorHint="#FFFFFF"
-            android:background="@android:color/transparent"
-            android:layout_marginLeft="@dimen/_20dp"
             />
 
     <ProgressBar android:indeterminate="true"
@@ -90,4 +41,4 @@
                  android:layout_centerInParent="true"
                  android:visibility="invisible"
             />
-</LinearLayout>
+</RelativeLayout>

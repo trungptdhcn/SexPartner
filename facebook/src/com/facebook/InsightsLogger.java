@@ -27,68 +27,59 @@ import java.util.Currency;
  * This class is deprecated. Please use {@link AppEventsLogger} instead.
  */
 @Deprecated
-public class InsightsLogger
-{
-    private static final String EVENT_PARAMETER_PIXEL_ID = "fb_offsite_pixel_id";
-    private static final String EVENT_PARAMETER_PIXEL_VALUE = "fb_offsite_pixel_value";
+public class InsightsLogger {
+    private static final String EVENT_PARAMETER_PIXEL_ID         = "fb_offsite_pixel_id";
+    private static final String EVENT_PARAMETER_PIXEL_VALUE      = "fb_offsite_pixel_value";
 
-    private static final String EVENT_NAME_LOG_CONVERSION_PIXEL = "fb_log_offsite_pixel";
+    private static final String EVENT_NAME_LOG_CONVERSION_PIXEL  = "fb_log_offsite_pixel";
 
     private AppEventsLogger appEventsLogger;
 
-    private InsightsLogger(Context context, String applicationId, Session session)
-    {
+    private InsightsLogger(Context context, String applicationId, Session session) {
         appEventsLogger = AppEventsLogger.newLogger(context, applicationId, session);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public static InsightsLogger newLogger(Context context, String clientToken)
-    {
+    public static InsightsLogger newLogger(Context context, String clientToken) {
         return new InsightsLogger(context, null, null);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public static InsightsLogger newLogger(Context context, String clientToken, String applicationId)
-    {
+    public static InsightsLogger newLogger(Context context, String clientToken, String applicationId) {
         return new InsightsLogger(context, applicationId, null);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public static InsightsLogger newLogger(Context context, String clientToken, String applicationId, Session session)
-    {
+    public static InsightsLogger newLogger(Context context, String clientToken, String applicationId, Session session) {
         return new InsightsLogger(context, applicationId, session);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public void logPurchase(BigDecimal purchaseAmount, Currency currency)
-    {
+    public void logPurchase(BigDecimal purchaseAmount, Currency currency) {
         logPurchase(purchaseAmount, currency, null);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public void logPurchase(BigDecimal purchaseAmount, Currency currency, Bundle parameters)
-    {
+    public void logPurchase(BigDecimal purchaseAmount, Currency currency, Bundle parameters) {
         appEventsLogger.logPurchase(purchaseAmount, currency, parameters);
     }
 
     /**
      * Deprecated. Please use {@link AppEventsLogger} instead.
      */
-    public void logConversionPixel(String pixelId, double valueOfPixel)
-    {
+    public void logConversionPixel(String pixelId, double valueOfPixel) {
 
-        if (pixelId == null)
-        {
+        if (pixelId == null) {
             Logger.log(LoggingBehavior.DEVELOPER_ERRORS, "Insights", "pixelID cannot be null");
             return;
         }

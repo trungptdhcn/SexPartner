@@ -22,20 +22,17 @@ import com.facebook.model.GraphObject;
 import java.util.ArrayList;
 import java.util.Collection;
 
-class SimpleGraphObjectCursor<T extends GraphObject> implements GraphObjectCursor<T>
-{
+class SimpleGraphObjectCursor<T extends GraphObject> implements GraphObjectCursor<T> {
     private int pos = -1;
     private boolean closed = false;
     private ArrayList<T> graphObjects = new ArrayList<T>();
     private boolean moreObjectsAvailable = false;
     private boolean fromCache = false;
 
-    SimpleGraphObjectCursor()
-    {
+    SimpleGraphObjectCursor() {
     }
 
-    SimpleGraphObjectCursor(SimpleGraphObjectCursor<T> other)
-    {
+    SimpleGraphObjectCursor(SimpleGraphObjectCursor<T> other) {
         pos = other.pos;
         closed = other.closed;
         graphObjects = new ArrayList<T>();
@@ -45,63 +42,52 @@ class SimpleGraphObjectCursor<T extends GraphObject> implements GraphObjectCurso
         // We do not copy observers.
     }
 
-    public void addGraphObjects(Collection<T> graphObjects, boolean fromCache)
-    {
+    public void addGraphObjects(Collection<T> graphObjects, boolean fromCache) {
         this.graphObjects.addAll(graphObjects);
         // We consider this cached if ANY results were from the cache.
         this.fromCache |= fromCache;
     }
 
-    public boolean isFromCache()
-    {
+    public boolean isFromCache() {
         return fromCache;
     }
 
-    public void setFromCache(boolean fromCache)
-    {
+    public void setFromCache(boolean fromCache) {
         this.fromCache = fromCache;
     }
 
-    public boolean areMoreObjectsAvailable()
-    {
+    public boolean areMoreObjectsAvailable() {
         return moreObjectsAvailable;
     }
 
-    public void setMoreObjectsAvailable(boolean moreObjectsAvailable)
-    {
+    public void setMoreObjectsAvailable(boolean moreObjectsAvailable) {
         this.moreObjectsAvailable = moreObjectsAvailable;
     }
 
     @Override
-    public int getCount()
-    {
+    public int getCount() {
         return graphObjects.size();
     }
 
     @Override
-    public int getPosition()
-    {
+    public int getPosition() {
         return pos;
     }
 
     @Override
-    public boolean move(int offset)
-    {
+    public boolean move(int offset) {
         return moveToPosition(pos + offset);
     }
 
     @Override
-    public boolean moveToPosition(int position)
-    {
+    public boolean moveToPosition(int position) {
         final int count = getCount();
-        if (position >= count)
-        {
+        if (position >= count) {
             pos = count;
             return false;
         }
 
-        if (position < 0)
-        {
+        if (position < 0) {
             pos = -1;
             return false;
         }
@@ -111,78 +97,65 @@ class SimpleGraphObjectCursor<T extends GraphObject> implements GraphObjectCurso
     }
 
     @Override
-    public boolean moveToFirst()
-    {
+    public boolean moveToFirst() {
         return moveToPosition(0);
     }
 
     @Override
-    public boolean moveToLast()
-    {
+    public boolean moveToLast() {
         return moveToPosition(getCount() - 1);
     }
 
     @Override
-    public boolean moveToNext()
-    {
+    public boolean moveToNext() {
         return moveToPosition(pos + 1);
     }
 
     @Override
-    public boolean moveToPrevious()
-    {
+    public boolean moveToPrevious() {
         return moveToPosition(pos - 1);
     }
 
     @Override
-    public boolean isFirst()
-    {
+    public boolean isFirst() {
         return (pos == 0) && (getCount() != 0);
     }
 
     @Override
-    public boolean isLast()
-    {
+    public boolean isLast() {
         final int count = getCount();
         return (pos == (count - 1)) && (count != 0);
     }
 
     @Override
-    public boolean isBeforeFirst()
-    {
+    public boolean isBeforeFirst() {
         return (getCount() == 0) || (pos == -1);
     }
 
     @Override
-    public boolean isAfterLast()
-    {
+    public boolean isAfterLast() {
         final int count = getCount();
         return (count == 0) || (pos == count);
     }
 
     @Override
-    public T getGraphObject()
-    {
-        if (pos < 0)
-        {
+    public T getGraphObject() {
+        if (pos < 0) {
             throw new CursorIndexOutOfBoundsException("Before first object.");
         }
-        if (pos >= graphObjects.size())
-        {
+        if (pos >= graphObjects.size()) {
             throw new CursorIndexOutOfBoundsException("After last object.");
         }
         return graphObjects.get(pos);
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         closed = true;
     }
 
     @Override
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closed;
     }
 

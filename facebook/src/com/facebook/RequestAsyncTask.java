@@ -33,8 +33,7 @@ import java.util.concurrent.Executor;
  * by applications having unique threading model needs.
  */
 @TargetApi(3)
-public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
-{
+public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>> {
     private static final String TAG = RequestAsyncTask.class.getCanonicalName();
     private static Method executeOnExecutorMethod;
 
@@ -43,15 +42,11 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
 
     private Exception exception;
 
-    static
-    {
-        for (Method method : AsyncTask.class.getMethods())
-        {
-            if ("executeOnExecutor".equals(method.getName()))
-            {
+    static {
+        for (Method method : AsyncTask.class.getMethods()) {
+            if ("executeOnExecutor".equals(method.getName())) {
                 Class<?>[] parameters = method.getParameterTypes();
-                if ((parameters.length == 2) && (parameters[0] == Executor.class) && parameters[1].isArray())
-                {
+                if ((parameters.length == 2) && (parameters[0] == Executor.class) && parameters[1].isArray()) {
                     executeOnExecutorMethod = method;
                     break;
                 }
@@ -65,8 +60,7 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      *
      * @param requests the requests to execute
      */
-    public RequestAsyncTask(Request... requests)
-    {
+    public RequestAsyncTask(Request... requests) {
         this(null, new RequestBatch(requests));
     }
 
@@ -76,8 +70,7 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      *
      * @param requests the requests to execute
      */
-    public RequestAsyncTask(Collection<Request> requests)
-    {
+    public RequestAsyncTask(Collection<Request> requests) {
         this(null, new RequestBatch(requests));
     }
 
@@ -87,8 +80,7 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      *
      * @param requests the requests to execute
      */
-    public RequestAsyncTask(RequestBatch requests)
-    {
+    public RequestAsyncTask(RequestBatch requests) {
         this(null, requests);
     }
 
@@ -101,8 +93,7 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      * @param connection the HTTP connection to use to execute the requests
      * @param requests   the requests to execute
      */
-    public RequestAsyncTask(HttpURLConnection connection, Request... requests)
-    {
+    public RequestAsyncTask(HttpURLConnection connection, Request... requests) {
         this(connection, new RequestBatch(requests));
     }
 
@@ -115,8 +106,7 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      * @param connection the HTTP connection to use to execute the requests
      * @param requests   the requests to execute
      */
-    public RequestAsyncTask(HttpURLConnection connection, Collection<Request> requests)
-    {
+    public RequestAsyncTask(HttpURLConnection connection, Collection<Request> requests) {
         this(connection, new RequestBatch(requests));
     }
 
@@ -129,89 +119,67 @@ public class RequestAsyncTask extends AsyncTask<Void, Void, List<Response>>
      * @param connection the HTTP connection to use to execute the requests
      * @param requests   the requests to execute
      */
-    public RequestAsyncTask(HttpURLConnection connection, RequestBatch requests)
-    {
+    public RequestAsyncTask(HttpURLConnection connection, RequestBatch requests) {
         this.requests = requests;
         this.connection = connection;
     }
 
-    protected final Exception getException()
-    {
+    protected final Exception getException() {
         return exception;
     }
 
-    protected final RequestBatch getRequests()
-    {
+    protected final RequestBatch getRequests() {
         return requests;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return new StringBuilder().append("{RequestAsyncTask: ").append(" connection: ").append(connection)
                 .append(", requests: ").append(requests).append("}").toString();
     }
 
     @Override
-    protected void onPreExecute()
-    {
+    protected void onPreExecute() {
         super.onPreExecute();
 
-        if (requests.getCallbackHandler() == null)
-        {
+        if (requests.getCallbackHandler() == null) {
             // We want any callbacks to go to a handler on this thread unless a handler has already been specified.
             requests.setCallbackHandler(new Handler());
         }
     }
 
     @Override
-    protected void onPostExecute(List<Response> result)
-    {
+    protected void onPostExecute(List<Response> result) {
         super.onPostExecute(result);
 
-        if (exception != null)
-        {
+        if (exception != null) {
             Log.d(TAG, String.format("onPostExecute: exception encountered during request: %s", exception.getMessage()));
         }
     }
 
     @Override
-    protected List<Response> doInBackground(Void... params)
-    {
-        try
-        {
-            if (connection == null)
-            {
+    protected List<Response> doInBackground(Void... params) {
+        try {
+            if (connection == null) {
                 return requests.executeAndWait();
-            }
-            else
-            {
+            } else {
                 return Request.executeConnectionAndWait(connection, requests);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             exception = e;
             return null;
         }
     }
 
-    RequestAsyncTask executeOnSettingsExecutor()
-    {
-        try
-        {
-            if (executeOnExecutorMethod != null)
-            {
+    RequestAsyncTask executeOnSettingsExecutor() {
+        try {
+            if (executeOnExecutorMethod != null) {
                 executeOnExecutorMethod.invoke(this, Settings.getExecutor(), null);
                 return this;
             }
-        }
-        catch (InvocationTargetException e)
-        {
+        } catch (InvocationTargetException e) {
             // fall-through
-        }
-        catch (IllegalAccessException e)
-        {
+        } catch (IllegalAccessException e) {
             // fall-through
         }
 

@@ -21,8 +21,7 @@ package com.facebook.internal;
  * any of the classes in this package is unsupported, and they may be modified or removed without warning at
  * any time.
  */
-public enum SessionAuthorizationType
-{
+public enum SessionAuthorizationType {
     READ,
     PUBLISH
 }

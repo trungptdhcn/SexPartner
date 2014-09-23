@@ -28,73 +28,55 @@ import com.facebook.widget.WebDialog;
  * This class is deprecated. See {@link com.facebook.widget.WebDialog}.
  */
 @Deprecated
-public class FbDialog extends WebDialog
-{
+public class FbDialog extends WebDialog {
     private DialogListener mListener;
 
-    public FbDialog(Context context, String url, DialogListener listener)
-    {
+    public FbDialog(Context context, String url, DialogListener listener) {
         this(context, url, listener, DEFAULT_THEME);
     }
 
-    public FbDialog(Context context, String url, DialogListener listener, int theme)
-    {
+    public FbDialog(Context context, String url, DialogListener listener, int theme) {
         super(context, url, theme);
         setDialogListener(listener);
     }
 
-    public FbDialog(Context context, String action, Bundle parameters, DialogListener listener)
-    {
+    public FbDialog(Context context, String action, Bundle parameters, DialogListener listener) {
         super(context, action, parameters, DEFAULT_THEME, null);
         setDialogListener(listener);
     }
 
     public FbDialog(Context context, String action, Bundle parameters, DialogListener listener,
-                    int theme)
-    {
+            int theme) {
         super(context, action, parameters, theme, null);
         setDialogListener(listener);
     }
 
-    private void setDialogListener(DialogListener listener)
-    {
+    private void setDialogListener(DialogListener listener) {
         this.mListener = listener;
-        setOnCompleteListener(new OnCompleteListener()
-        {
+        setOnCompleteListener(new OnCompleteListener() {
             @Override
-            public void onComplete(Bundle values, FacebookException error)
-            {
+            public void onComplete(Bundle values, FacebookException error) {
                 callDialogListener(values, error);
             }
         });
     }
 
-    private void callDialogListener(Bundle values, FacebookException error)
-    {
-        if (mListener == null)
-        {
+    private void callDialogListener(Bundle values, FacebookException error) {
+        if (mListener == null) {
             return;
         }
 
-        if (values != null)
-        {
+        if (values != null) {
             mListener.onComplete(values);
-        }
-        else
-        {
-            if (error instanceof FacebookDialogException)
-            {
+        } else {
+            if (error instanceof FacebookDialogException) {
                 FacebookDialogException facebookDialogException = (FacebookDialogException) error;
                 DialogError dialogError = new DialogError(facebookDialogException.getMessage(),
                         facebookDialogException.getErrorCode(), facebookDialogException.getFailingUrl());
                 mListener.onError(dialogError);
-            }
-            else if (error instanceof FacebookOperationCanceledException)
-            {
+            } else if (error instanceof FacebookOperationCanceledException) {
                 mListener.onCancel();
-            }
-            else
-            {
+            } else {
                 FacebookError facebookError = new FacebookError(error.getMessage());
                 mListener.onFacebookError(facebookError);
             }

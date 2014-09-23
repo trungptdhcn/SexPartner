@@ -31,8 +31,7 @@ package com.facebook.android;
  *
  * @devDocDeprecated
  */
-public class DialogError extends Throwable
-{
+public class DialogError extends Throwable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,28 +41,23 @@ public class DialogError extends Throwable
      */
     private int mErrorCode;
 
-    /**
-     * The URL that the dialog was trying to load
-     */
+    /** The URL that the dialog was trying to load */
     private String mFailingUrl;
 
     @Deprecated
-    public DialogError(String message, int errorCode, String failingUrl)
-    {
+    public DialogError(String message, int errorCode, String failingUrl) {
         super(message);
         mErrorCode = errorCode;
         mFailingUrl = failingUrl;
     }
 
     @Deprecated
-    public int getErrorCode()
-    {
+    public int getErrorCode() {
         return mErrorCode;
     }
 
     @Deprecated
-    public String getFailingUrl()
-    {
+    public String getFailingUrl() {
         return mFailingUrl;
     }
 

@@ -19,15 +19,13 @@ package com.facebook;
 /**
  * An Exception indicating that an operation was canceled before it completed.
  */
-public class FacebookOperationCanceledException extends FacebookException
-{
+public class FacebookOperationCanceledException extends FacebookException {
     static final long serialVersionUID = 1;
 
     /**
      * Constructs a FacebookOperationCanceledException with no additional information.
      */
-    public FacebookOperationCanceledException()
-    {
+    public FacebookOperationCanceledException() {
         super();
     }
 
@@ -36,8 +34,7 @@ public class FacebookOperationCanceledException extends FacebookException
      *
      * @param message A String to be returned from getMessage.
      */
-    public FacebookOperationCanceledException(String message)
-    {
+    public FacebookOperationCanceledException(String message) {
         super(message);
     }
 
@@ -47,8 +44,7 @@ public class FacebookOperationCanceledException extends FacebookException
      * @param message   A String to be returned from getMessage.
      * @param throwable A Throwable to be returned from getCause.
      */
-    public FacebookOperationCanceledException(String message, Throwable throwable)
-    {
+    public FacebookOperationCanceledException(String message, Throwable throwable) {
         super(message, throwable);
     }
 
@@ -57,8 +53,7 @@ public class FacebookOperationCanceledException extends FacebookException
      *
      * @param throwable A Throwable to be returned from getCause.
      */
-    public FacebookOperationCanceledException(Throwable throwable)
-    {
+    public FacebookOperationCanceledException(Throwable throwable) {
         super(throwable);
     }
 }

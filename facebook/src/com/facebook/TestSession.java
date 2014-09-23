@@ -59,23 +59,29 @@ import java.util.*;
  * seems to be in an invalid state, it can be deleted manually via the Web interface at
  * https://developers.facebook.com/apps/APP_ID/permissions?role=test+users.
  */
-public class TestSession extends Session
-{
+public class TestSession extends Session {
     private static final long serialVersionUID = 1L;
+
+    private enum Mode {
+        PRIVATE, SHARED
+    }
+
     private static final String LOG_TAG = Logger.LOG_TAG_BASE + "TestSession";
+
     private static Map<String, TestAccount> appTestAccounts;
     private static String testApplicationSecret;
     private static String testApplicationId;
+
     private final String sessionUniqueUserTag;
     private final List<String> requestedPermissions;
     private final Mode mode;
     private String testAccountId;
     private String testAccountUserName;
+
     private boolean wasAskedToExtendAccessToken;
 
     TestSession(Activity activity, List<String> permissions, TokenCachingStrategy tokenCachingStrategy,
-                String sessionUniqueUserTag, Mode mode)
-    {
+            String sessionUniqueUserTag, Mode mode) {
         super(activity, TestSession.testApplicationId, tokenCachingStrategy);
 
         Validate.notNull(permissions, "permissions");
@@ -99,8 +105,7 @@ public class TestSession extends Session
      *                    a common set of permissions (email, publish_actions) being requested
      * @return a new TestSession that is in the CREATED state, ready to be opened
      */
-    public static TestSession createSessionWithPrivateUser(Activity activity, List<String> permissions)
-    {
+    public static TestSession createSessionWithPrivateUser(Activity activity, List<String> permissions) {
         return createTestSession(activity, permissions, Mode.PRIVATE, null);
     }
 
@@ -117,8 +122,7 @@ public class TestSession extends Session
      *                    a common set of permissions (email, publish_actions) being requested
      * @return a new TestSession that is in the CREATED state, ready to be opened
      */
-    public static TestSession createSessionWithSharedUser(Activity activity, List<String> permissions)
-    {
+    public static TestSession createSessionWithSharedUser(Activity activity, List<String> permissions) {
         return createSessionWithSharedUser(activity, permissions, null);
     }
 
@@ -139,8 +143,7 @@ public class TestSession extends Session
      * @return a new TestSession that is in the CREATED state, ready to be opened
      */
     public static TestSession createSessionWithSharedUser(Activity activity, List<String> permissions,
-                                                          String sessionUniqueUserTag)
-    {
+            String sessionUniqueUserTag) {
         return createTestSession(activity, permissions, Mode.SHARED, sessionUniqueUserTag);
     }
 
@@ -149,8 +152,7 @@ public class TestSession extends Session
      *
      * @return the application ID
      */
-    public static synchronized String getTestApplicationId()
-    {
+    public static synchronized String getTestApplicationId() {
         return testApplicationId;
     }
 
@@ -160,10 +162,8 @@ public class TestSession extends Session
      *
      * @param applicationId the application ID
      */
-    public static synchronized void setTestApplicationId(String applicationId)
-    {
-        if (testApplicationId != null && !testApplicationId.equals(applicationId))
-        {
+    public static synchronized void setTestApplicationId(String applicationId) {
+        if (testApplicationId != null && !testApplicationId.equals(applicationId)) {
             throw new FacebookException("Can't have more than one test application ID");
         }
         testApplicationId = applicationId;
@@ -174,8 +174,7 @@ public class TestSession extends Session
      *
      * @return the application secret
      */
-    public static synchronized String getTestApplicationSecret()
-    {
+    public static synchronized String getTestApplicationSecret() {
         return testApplicationSecret;
     }
 
@@ -185,25 +184,39 @@ public class TestSession extends Session
      *
      * @param applicationSecret the application secret
      */
-    public static synchronized void setTestApplicationSecret(String applicationSecret)
-    {
-        if (testApplicationSecret != null && !testApplicationSecret.equals(applicationSecret))
-        {
+    public static synchronized void setTestApplicationSecret(String applicationSecret) {
+        if (testApplicationSecret != null && !testApplicationSecret.equals(applicationSecret)) {
             throw new FacebookException("Can't have more than one test application secret");
         }
         testApplicationSecret = applicationSecret;
     }
 
+    /**
+     * Gets the ID of the test user that this TestSession is authenticated as.
+     *
+     * @return the Facebook user ID of the test user
+     */
+    public final String getTestUserId() {
+        return testAccountId;
+    }
+
+    /**
+     * Gets the name of the test user that this TestSession is authenticated as.
+     *
+     * @return the name of the test user
+     */
+    public final String getTestUserName() {
+        return testAccountUserName;
+    }
+
+
     private static synchronized TestSession createTestSession(Activity activity, List<String> permissions, Mode mode,
-                                                              String sessionUniqueUserTag)
-    {
-        if (Utility.isNullOrEmpty(testApplicationId) || Utility.isNullOrEmpty(testApplicationSecret))
-        {
+            String sessionUniqueUserTag) {
+        if (Utility.isNullOrEmpty(testApplicationId) || Utility.isNullOrEmpty(testApplicationSecret)) {
             throw new FacebookException("Must provide app ID and secret");
         }
 
-        if (Utility.isNullOrEmpty(permissions))
-        {
+        if (Utility.isNullOrEmpty(permissions)) {
             permissions = Arrays.asList("email", "publish_actions");
         }
 
@@ -211,10 +224,8 @@ public class TestSession extends Session
                 mode);
     }
 
-    private static synchronized void retrieveTestAccountsForAppIfNeeded()
-    {
-        if (appTestAccounts != null)
-        {
+    private static synchronized void retrieveTestAccountsForAppIfNeeded() {
+        if (appTestAccounts != null) {
             return;
         }
 
@@ -241,12 +252,11 @@ public class TestSession extends Session
         requestTestUserNames.setBatchEntryDependsOn("testUsers");
 
         List<Response> responses = Request.executeBatchAndWait(requestTestUsers, requestTestUserNames);
-        if (responses == null || responses.size() != 2)
-        {
+        if (responses == null || responses.size() != 2) {
             throw new FacebookException("Unexpected number of results from TestUsers batch query");
         }
 
-        TestAccountsResponse testAccountsResponse = responses.get(0).getGraphObjectAs(TestAccountsResponse.class);
+        TestAccountsResponse testAccountsResponse  = responses.get(0).getGraphObjectAs(TestAccountsResponse.class);
         GraphObjectList<TestAccount> testAccounts = testAccountsResponse.getData();
 
         // Response should contain a map of test accounts: { id's => { GraphUser } }
@@ -257,63 +267,31 @@ public class TestSession extends Session
     }
 
     private static synchronized void populateTestAccounts(Collection<TestAccount> testAccounts,
-                                                          GraphObject userAccountsMap)
-    {
-        for (TestAccount testAccount : testAccounts)
-        {
+                                                          GraphObject userAccountsMap) {
+        for (TestAccount testAccount : testAccounts) {
             GraphUser testUser = userAccountsMap.getPropertyAs(testAccount.getId(), GraphUser.class);
             testAccount.setName(testUser.getName());
             storeTestAccount(testAccount);
         }
     }
 
-    private static synchronized void storeTestAccount(TestAccount testAccount)
-    {
+    private static synchronized void storeTestAccount(TestAccount testAccount) {
         appTestAccounts.put(testAccount.getId(), testAccount);
     }
 
-    private static synchronized TestAccount findTestAccountMatchingIdentifier(String identifier)
-    {
+    private static synchronized TestAccount findTestAccountMatchingIdentifier(String identifier) {
         retrieveTestAccountsForAppIfNeeded();
 
-        for (TestAccount testAccount : appTestAccounts.values())
-        {
-            if (testAccount.getName().contains(identifier))
-            {
+        for (TestAccount testAccount : appTestAccounts.values()) {
+            if (testAccount.getName().contains(identifier)) {
                 return testAccount;
             }
         }
         return null;
     }
 
-    static final String getAppAccessToken()
-    {
-        return testApplicationId + "|" + testApplicationSecret;
-    }
-
-    /**
-     * Gets the ID of the test user that this TestSession is authenticated as.
-     *
-     * @return the Facebook user ID of the test user
-     */
-    public final String getTestUserId()
-    {
-        return testAccountId;
-    }
-
-    /**
-     * Gets the name of the test user that this TestSession is authenticated as.
-     *
-     * @return the name of the test user
-     */
-    public final String getTestUserName()
-    {
-        return testAccountUserName;
-    }
-
     @Override
-    public final String toString()
-    {
+    public final String toString() {
         String superString = super.toString();
 
         return new StringBuilder().append("{TestSession").append(" testUserId:").append(testAccountId)
@@ -321,39 +299,31 @@ public class TestSession extends Session
     }
 
     @Override
-    void authorize(AuthorizationRequest request)
-    {
-        if (mode == Mode.PRIVATE)
-        {
+    void authorize(AuthorizationRequest request) {
+        if (mode == Mode.PRIVATE) {
             createTestAccountAndFinishAuth();
-        }
-        else
-        {
+        } else {
             findOrCreateSharedTestAccount();
         }
     }
 
     @Override
-    void postStateChange(final SessionState oldState, final SessionState newState, final Exception error)
-    {
+    void postStateChange(final SessionState oldState, final SessionState newState, final Exception error) {
         // Make sure this doesn't get overwritten.
         String id = testAccountId;
 
         super.postStateChange(oldState, newState, error);
 
-        if (newState.isClosed() && id != null && mode == Mode.PRIVATE)
-        {
+        if (newState.isClosed() && id != null && mode == Mode.PRIVATE) {
             deleteTestAccount(id, getAppAccessToken());
         }
     }
 
-    boolean getWasAskedToExtendAccessToken()
-    {
+    boolean getWasAskedToExtendAccessToken() {
         return wasAskedToExtendAccessToken;
     }
 
-    void forceExtendAccessToken(boolean forceExtendAccessToken)
-    {
+    void forceExtendAccessToken(boolean forceExtendAccessToken) {
         AccessToken currentToken = getTokenInfo();
         setTokenInfo(
                 new AccessToken(currentToken.getToken(), new Date(), currentToken.getPermissions(),
@@ -362,40 +332,36 @@ public class TestSession extends Session
     }
 
     @Override
-    boolean shouldExtendAccessToken()
-    {
+    boolean shouldExtendAccessToken() {
         boolean result = super.shouldExtendAccessToken();
         wasAskedToExtendAccessToken = false;
         return result;
     }
 
     @Override
-    void extendAccessToken()
-    {
+    void extendAccessToken() {
         wasAskedToExtendAccessToken = true;
         super.extendAccessToken();
     }
 
-    void fakeTokenRefreshAttempt()
-    {
+    void fakeTokenRefreshAttempt() {
         setCurrentTokenRefreshRequest(new TokenRefreshRequest());
     }
 
-    private void findOrCreateSharedTestAccount()
-    {
+    static final String getAppAccessToken() {
+        return testApplicationId + "|" + testApplicationSecret;
+    }
+
+    private void findOrCreateSharedTestAccount() {
         TestAccount testAccount = findTestAccountMatchingIdentifier(getSharedTestAccountIdentifier());
-        if (testAccount != null)
-        {
+        if (testAccount != null) {
             finishAuthWithTestAccount(testAccount);
-        }
-        else
-        {
+        } else {
             createTestAccountAndFinishAuth();
         }
     }
 
-    private void finishAuthWithTestAccount(TestAccount testAccount)
-    {
+    private void finishAuthWithTestAccount(TestAccount testAccount) {
         testAccountId = testAccount.getId();
         testAccountUserName = testAccount.getName();
 
@@ -404,8 +370,7 @@ public class TestSession extends Session
         finishAuthOrReauth(accessToken, null);
     }
 
-    private TestAccount createTestAccountAndFinishAuth()
-    {
+    private TestAccount createTestAccountAndFinishAuth() {
         Bundle parameters = new Bundle();
         parameters.putString("installed", "true");
         parameters.putString("permissions", getPermissionsString());
@@ -414,8 +379,7 @@ public class TestSession extends Session
         // If we're in shared mode, we want to rename this user to encode its permissions, so we can find it later
         // in another shared session. If we're in private mode, don't bother renaming it since we're just going to
         // delete it at the end of the session.
-        if (mode == Mode.SHARED)
-        {
+        if (mode == Mode.SHARED) {
             parameters.putString("name", String.format("Shared %s Testuser", getSharedTestAccountIdentifier()));
         }
 
@@ -425,18 +389,14 @@ public class TestSession extends Session
 
         FacebookRequestError error = response.getError();
         TestAccount testAccount = response.getGraphObjectAs(TestAccount.class);
-        if (error != null)
-        {
+        if (error != null) {
             finishAuthOrReauth(null, error.getException());
             return null;
-        }
-        else
-        {
+        } else {
             assert testAccount != null;
 
             // If we are in shared mode, store this new account in the dictionary so we can re-use it later.
-            if (mode == Mode.SHARED)
-            {
+            if (mode == Mode.SHARED) {
                 // Remember the new name we gave it, since we didn't get it back in the results of the create request.
                 testAccount.setName(parameters.getString("name"));
                 storeTestAccount(testAccount);
@@ -448,8 +408,7 @@ public class TestSession extends Session
         }
     }
 
-    private void deleteTestAccount(String testAccountId, String appAccessToken)
-    {
+    private void deleteTestAccount(String testAccountId, String appAccessToken) {
         Bundle parameters = new Bundle();
         parameters.putString("access_token", appAccessToken);
 
@@ -458,24 +417,19 @@ public class TestSession extends Session
 
         FacebookRequestError error = response.getError();
         GraphObject graphObject = response.getGraphObject();
-        if (error != null)
-        {
+        if (error != null) {
             Log.w(LOG_TAG, String.format("Could not delete test account %s: %s", testAccountId, error.getException().toString()));
-        }
-        else if (graphObject.getProperty(Response.NON_JSON_RESPONSE_PROPERTY) == (Boolean) false
-                || graphObject.getProperty(Response.SUCCESS_KEY) == (Boolean) false)
-        {
+        } else if (graphObject.getProperty(Response.NON_JSON_RESPONSE_PROPERTY) == (Boolean) false
+                   || graphObject.getProperty(Response.SUCCESS_KEY) == (Boolean) false) {
             Log.w(LOG_TAG, String.format("Could not delete test account %s: unknown reason", testAccountId));
         }
     }
 
-    private String getPermissionsString()
-    {
+    private String getPermissionsString() {
         return TextUtils.join(",", requestedPermissions);
     }
 
-    private String getSharedTestAccountIdentifier()
-    {
+    private String getSharedTestAccountIdentifier() {
         // We use long even though hashes are ints to avoid sign issues.
         long permissionsHash = getPermissionsString().hashCode() & 0xffffffffL;
         long sessionTagHash = (sessionUniqueUserTag != null) ? sessionUniqueUserTag.hashCode() & 0xffffffffL : 0;
@@ -484,8 +438,7 @@ public class TestSession extends Session
         return validNameStringFromInteger(combinedHash);
     }
 
-    private String validNameStringFromInteger(long i)
-    {
+    private String validNameStringFromInteger(long i) {
         String s = Long.toString(i);
         StringBuilder result = new StringBuilder("Perm");
 
@@ -493,10 +446,8 @@ public class TestSession extends Session
         //  that might make Facebook reject the name by converting every other repeated character into one
         //  10 higher ('k'-'t').
         char lastChar = 0;
-        for (char c : s.toCharArray())
-        {
-            if (c == lastChar)
-            {
+        for (char c : s.toCharArray()) {
+            if (c == lastChar) {
                 c += 10;
             }
             result.append((char) (c + 'a' - '0'));
@@ -506,13 +457,7 @@ public class TestSession extends Session
         return result.toString();
     }
 
-    private enum Mode
-    {
-        PRIVATE, SHARED
-    }
-
-    private interface TestAccount extends GraphObject
-    {
+    private interface TestAccount extends GraphObject {
         String getId();
 
         String getAccessToken();
@@ -523,30 +468,25 @@ public class TestSession extends Session
         void setName(String name);
     }
 
-    private interface TestAccountsResponse extends GraphObject
-    {
+    private interface TestAccountsResponse extends GraphObject {
         GraphObjectList<TestAccount> getData();
     }
 
-    private static final class TestTokenCachingStrategy extends TokenCachingStrategy
-    {
+    private static final class TestTokenCachingStrategy extends TokenCachingStrategy {
         private Bundle bundle;
 
         @Override
-        public Bundle load()
-        {
+        public Bundle load() {
             return bundle;
         }
 
         @Override
-        public void save(Bundle value)
-        {
+        public void save(Bundle value) {
             bundle = value;
         }
 
         @Override
-        public void clear()
-        {
+        public void clear() {
             bundle = null;
         }
     }

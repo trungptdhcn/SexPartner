@@ -18,69 +18,55 @@ package com.facebook;
 
 import android.os.Handler;
 
-class RequestProgress
-{
+class RequestProgress {
     private final Request request;
     private final Handler callbackHandler;
     private final long threshold;
 
     private long progress, lastReportedProgress, maxProgress;
 
-    RequestProgress(Handler callbackHandler, Request request)
-    {
+    RequestProgress(Handler callbackHandler, Request request) {
         this.request = request;
         this.callbackHandler = callbackHandler;
 
         this.threshold = Settings.getOnProgressThreshold();
     }
 
-    long getProgress()
-    {
+    long getProgress() {
         return progress;
     }
 
-    long getMaxProgress()
-    {
+    long getMaxProgress() {
         return maxProgress;
     }
 
-    void addProgress(long size)
-    {
+    void addProgress(long size) {
         progress += size;
 
-        if (progress >= lastReportedProgress + threshold || progress >= maxProgress)
-        {
+        if (progress >= lastReportedProgress + threshold || progress >= maxProgress) {
             reportProgress();
         }
     }
 
-    void addToMax(long size)
-    {
+    void addToMax(long size) {
         maxProgress += size;
     }
 
-    void reportProgress()
-    {
-        if (progress > lastReportedProgress)
-        {
+    void reportProgress() {
+        if (progress > lastReportedProgress) {
             Request.Callback callback = request.getCallback();
-            if (maxProgress > 0 && callback instanceof Request.OnProgressCallback)
-            {
+            if (maxProgress > 0 && callback instanceof Request.OnProgressCallback) {
                 // Keep copies to avoid threading issues
                 final long currentCopy = progress;
                 final long maxProgressCopy = maxProgress;
                 final Request.OnProgressCallback callbackCopy = (Request.OnProgressCallback) callback;
-                if (callbackHandler == null)
-                {
+                if (callbackHandler == null) {
                     callbackCopy.onProgress(currentCopy, maxProgressCopy);
                 }
-                else
-                {
-                    callbackHandler.post(new Runnable()
-                    {
+                else {
+                    callbackHandler.post(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             callbackCopy.onProgress(currentCopy, maxProgressCopy);
                         }
                     });
