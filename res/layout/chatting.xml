@@ -50,7 +50,7 @@
                     android:layout_width="@dimen/_70dp"
                     android:layout_height="@dimen/_70dp"
                     android:src="@drawable/test"
-                    android:layout_centerVertical="true"
+                    android:layout_alignParentTop="true"
                     android:layout_alignParentLeft="true"
                     android:layout_marginLeft="@dimen/_10dp"
                     />
@@ -99,6 +99,7 @@
                 />
     </RelativeLayout>
     <ListView
+            android:id="@+id/chatting_lvLogchat"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
     </ListView>

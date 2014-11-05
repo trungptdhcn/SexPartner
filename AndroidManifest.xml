@@ -33,7 +33,7 @@
         <activity android:name=".activity.TimeToMatchActivity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.Round1Activity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.UserGuideActivity" android:theme="@android:style/Theme.NoTitleBar"/>
-        <activity android:name=".activity.ChatPageActivity" android:theme="@android:style/Theme.NoTitleBar"/>
+        <activity android:name=".activity.ChattingActivity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.AnsweringTimeActivity" android:theme="@android:style/Theme.NoTitleBar"/>
         <activity android:name=".activity.SelectYourPartnerActivity" android:theme="@android:style/Theme.NoTitleBar"/>
     </application>
