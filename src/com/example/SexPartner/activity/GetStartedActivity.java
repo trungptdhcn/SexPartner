@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -59,7 +60,7 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
         databaseHelper = new DatabaseHelper(this);
         friendDAO = new FriendDAO(databaseHelper);
         LoginButton authButton = (LoginButton) findViewById(R.id.get_started_btFindYourPartner);
-        btGetList = (Button)findViewById(R.id.get_started_btGetList);
+        btGetList = (Button) findViewById(R.id.get_started_btGetList);
         authButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -73,7 +74,8 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
             @Override
             public void onClick(View v)
             {
-                Intent i = new Intent(getApplicationContext(),SelectYourPartnerActivity.class);
+                getListFriend();
+                Intent i = new Intent(getApplicationContext(), SelectYourPartnerActivity.class);
                 startActivity(i);
             }
         });
@@ -98,7 +100,6 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
         else
         {
             session = Session.openActiveSession(GetStartedActivity.this, true, statusCallback);
-            getListFriend();
         }
 
     }
@@ -167,46 +168,50 @@ public class GetStartedActivity extends Activity implements View.OnClickListener
     public void getListFriend()
     {
         Session session = Session.getActiveSession();
-//        if (session != null &&
-//                (session.isOpened() || session.isClosed()))
-//        {
-        new Request(
-                Session.getActiveSession(),
-                "me/taggable_friends",
-                null,
-                HttpMethod.GET,
-                new Request.Callback()
-                {
-                    public void onCompleted(Response response)
+        if (session != null &&
+                (session.isOpened() || session.isClosed()))
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+            Request requestgetListFriend = new Request(
+                    Session.getActiveSession(),
+                    "me/taggable_friends",
+                    null,
+                    HttpMethod.GET,
+                    new Request.Callback()
                     {
-                        UserListDTO userListDTO = new Gson().fromJson(response.getRawResponse(), UserListDTO.class);
-                        if(userListDTO != null)
+                        public void onCompleted(Response response)
                         {
-                            List<UserDTO> userDTOs = userListDTO.getUserDTOList();
-                            List<Friend> friends = new ArrayList<Friend>();
-                            for (UserDTO userDTO : userDTOs)
+                            UserListDTO userListDTO = new Gson().fromJson(response.getRawResponse(), UserListDTO.class);
+                            if (userListDTO != null)
                             {
-                                Friend friend = new Friend();
-                                friend.setUserId(userDTO.getId());
-                                friend.setUserName(userDTO.getName());
-                                friend.setUrlPhoto(userDTO.getPictureDTO().getDataUrlDTO().getUrl());
-                                friends.add(friend);
+                                List<UserDTO> userDTOs = userListDTO.getUserDTOList();
+                                List<Friend> friends = new ArrayList<Friend>();
+                                for (UserDTO userDTO : userDTOs)
+                                {
+                                    Friend friend = new Friend();
+                                    friend.setUserId(userDTO.getId());
+                                    friend.setUserName(userDTO.getName());
+                                    friend.setUrlPhoto(userDTO.getPictureDTO().getDataUrlDTO().getUrl());
+                                    friends.add(friend);
+                                    Log.i("Trung dai ca", friend.getUserName());
+                                }
+                                try
+                                {
+                                    friendDAO.create(friends);
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                Log.i(TAG, "Trung dai ca");
                             }
-                            try
-                            {
-                                friendDAO.create(friends);
-                            }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
-                            Log.i(TAG, "Logged in...");
-                        }
 
+                        }
                     }
-                }
-        ).executeAsync();
-//        }
+            );
+            requestgetListFriend.executeAsync();
+        }
 //        new AsyncTask<Void, Void, Void>()
 //        {
 //
